@@ -1,7 +1,7 @@
 import { EnvironmentConfig } from "./dev";
 
 export const prodConfig: EnvironmentConfig = {
-  projectName: "<project-name>",
+  projectName: "portfolio",
   stage: "prod",
   region: "us-east-1",
   removalPolicy: "retain",

@@ -1,7 +1,7 @@
 import { EnvironmentConfig } from "./dev";
 
 export const stagingConfig: EnvironmentConfig = {
-  projectName: "<project-name>",
+  projectName: "portfolio",
   stage: "staging",
   region: "us-east-1",
   removalPolicy: "retain",

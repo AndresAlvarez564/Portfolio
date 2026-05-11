@@ -10,7 +10,7 @@ export interface EnvironmentConfig {
 }
 
 export const devConfig: EnvironmentConfig = {
-  projectName: "<project-name>",
+  projectName: "portfolio",
   stage: "dev",
   region: "us-east-1",
   removalPolicy: "destroy",
