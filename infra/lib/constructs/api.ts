@@ -88,17 +88,14 @@ export class ApiConstruct extends Construct {
       authorizationType: apigateway.AuthorizationType.COGNITO,
     };
 
-    // Placeholder integration — used until real Lambda functions are wired in TK-11
+    // Helper: build a LambdaIntegration when the function exists, otherwise a mock (safety fallback)
     const mockIntegration = new apigateway.MockIntegration({
       integrationResponses: [{ statusCode: "501" }],
       requestTemplates: { "application/json": '{"statusCode": 501}' },
     });
-    const mockMethodOptions = (auth?: apigateway.MethodOptions): apigateway.MethodOptions => ({
+    const methodOptions = (auth?: apigateway.MethodOptions): apigateway.MethodOptions => ({
       ...auth,
-      methodResponses: [{ statusCode: "501" }],
     });
-
-    // Helper: add a Lambda integration when the function exists, otherwise use mock
     const integration = (key: string): apigateway.Integration =>
       lambdas[key]
         ? new apigateway.LambdaIntegration(lambdas[key])
@@ -110,20 +107,20 @@ export class ApiConstruct extends Construct {
 
     // GET /profile
     const profileResource = this.restApi.root.addResource("profile");
-    profileResource.addMethod("GET", integration("profile"), mockMethodOptions());
+    profileResource.addMethod("GET", integration("profile"), methodOptions());
 
     // PUT /profile  (admin)
-    profileResource.addMethod("PUT", integration("profile"), mockMethodOptions(withAuth));
+    profileResource.addMethod("PUT", integration("profile"), methodOptions(withAuth));
 
     // GET /projects
     // POST /projects  (admin)
     // GET /projects/admin  (admin) — must be defined before {slug} to avoid conflict
     const projectsResource = this.restApi.root.addResource("projects");
-    projectsResource.addMethod("GET", integration("projects"), mockMethodOptions());
-    projectsResource.addMethod("POST", integration("projects"), mockMethodOptions(withAuth));
+    projectsResource.addMethod("GET", integration("projects"), methodOptions());
+    projectsResource.addMethod("POST", integration("projects"), methodOptions(withAuth));
 
     const projectsAdminResource = projectsResource.addResource("admin");
-    projectsAdminResource.addMethod("GET", integration("projects"), mockMethodOptions(withAuth));
+    projectsAdminResource.addMethod("GET", integration("projects"), methodOptions(withAuth));
 
     // GET /projects/{slug}          (public — by slug)
     // GET /projects/{id}/admin      (admin — by ID, includes drafts)
@@ -131,87 +128,87 @@ export class ApiConstruct extends Construct {
     // DELETE /projects/{id}         (admin)
     // PATCH /projects/{id}          (admin — status / featured)
     const projectByIdResource = projectsResource.addResource("{slug}");
-    projectByIdResource.addMethod("GET", integration("projects"), mockMethodOptions());
-    projectByIdResource.addMethod("PUT", integration("projects"), mockMethodOptions(withAuth));
-    projectByIdResource.addMethod("DELETE", integration("projects"), mockMethodOptions(withAuth));
-    projectByIdResource.addMethod("PATCH", integration("projects"), mockMethodOptions(withAuth));
+    projectByIdResource.addMethod("GET", integration("projects"), methodOptions());
+    projectByIdResource.addMethod("PUT", integration("projects"), methodOptions(withAuth));
+    projectByIdResource.addMethod("DELETE", integration("projects"), methodOptions(withAuth));
+    projectByIdResource.addMethod("PATCH", integration("projects"), methodOptions(withAuth));
 
     const projectAdminByIdResource = projectByIdResource.addResource("admin");
-    projectAdminByIdResource.addMethod("GET", integration("projects"), mockMethodOptions(withAuth));
+    projectAdminByIdResource.addMethod("GET", integration("projects"), methodOptions(withAuth));
 
     // GET /projects/{id}/case-study   (admin)
     // PUT /projects/{id}/case-study   (admin)
     const caseStudyResource = projectByIdResource.addResource("case-study");
-    caseStudyResource.addMethod("GET", integration("projects"), mockMethodOptions(withAuth));
-    caseStudyResource.addMethod("PUT", integration("projects"), mockMethodOptions(withAuth));
+    caseStudyResource.addMethod("GET", integration("projects"), methodOptions(withAuth));
+    caseStudyResource.addMethod("PUT", integration("projects"), methodOptions(withAuth));
 
     // GET /experience
     // POST /experience  (admin)
     const experienceResource = this.restApi.root.addResource("experience");
-    experienceResource.addMethod("GET", integration("experience"), mockMethodOptions());
-    experienceResource.addMethod("POST", integration("experience"), mockMethodOptions(withAuth));
+    experienceResource.addMethod("GET", integration("experience"), methodOptions());
+    experienceResource.addMethod("POST", integration("experience"), methodOptions(withAuth));
 
     // PATCH /experience/reorder  (admin) — must be before {id}
     const experienceReorderResource = experienceResource.addResource("reorder");
-    experienceReorderResource.addMethod("PATCH", integration("experience"), mockMethodOptions(withAuth));
+    experienceReorderResource.addMethod("PATCH", integration("experience"), methodOptions(withAuth));
 
     // PUT /experience/{id}     (admin)
     // DELETE /experience/{id}  (admin)
     const experienceByIdResource = experienceResource.addResource("{id}");
-    experienceByIdResource.addMethod("PUT", integration("experience"), mockMethodOptions(withAuth));
-    experienceByIdResource.addMethod("DELETE", integration("experience"), mockMethodOptions(withAuth));
+    experienceByIdResource.addMethod("PUT", integration("experience"), methodOptions(withAuth));
+    experienceByIdResource.addMethod("DELETE", integration("experience"), methodOptions(withAuth));
 
     // GET /skills
     // POST /skills  (admin)
     const skillsResource = this.restApi.root.addResource("skills");
-    skillsResource.addMethod("GET", integration("skills"), mockMethodOptions());
-    skillsResource.addMethod("POST", integration("skills"), mockMethodOptions(withAuth));
+    skillsResource.addMethod("GET", integration("skills"), methodOptions());
+    skillsResource.addMethod("POST", integration("skills"), methodOptions(withAuth));
 
     // PUT /skills/{id}     (admin)
     // DELETE /skills/{id}  (admin)
     const skillByIdResource = skillsResource.addResource("{id}");
-    skillByIdResource.addMethod("PUT", integration("skills"), mockMethodOptions(withAuth));
-    skillByIdResource.addMethod("DELETE", integration("skills"), mockMethodOptions(withAuth));
+    skillByIdResource.addMethod("PUT", integration("skills"), methodOptions(withAuth));
+    skillByIdResource.addMethod("DELETE", integration("skills"), methodOptions(withAuth));
 
     // GET /certifications
     // POST /certifications  (admin)
     const certificationsResource = this.restApi.root.addResource("certifications");
-    certificationsResource.addMethod("GET", integration("certifications"), mockMethodOptions());
-    certificationsResource.addMethod("POST", integration("certifications"), mockMethodOptions(withAuth));
+    certificationsResource.addMethod("GET", integration("certifications"), methodOptions());
+    certificationsResource.addMethod("POST", integration("certifications"), methodOptions(withAuth));
 
     // PUT /certifications/{id}     (admin)
     // DELETE /certifications/{id}  (admin)
     const certByIdResource = certificationsResource.addResource("{id}");
-    certByIdResource.addMethod("PUT", integration("certifications"), mockMethodOptions(withAuth));
-    certByIdResource.addMethod("DELETE", integration("certifications"), mockMethodOptions(withAuth));
+    certByIdResource.addMethod("PUT", integration("certifications"), methodOptions(withAuth));
+    certByIdResource.addMethod("DELETE", integration("certifications"), methodOptions(withAuth));
 
     // POST /media/upload    (admin)
     // POST /media/confirm   (admin)
     // GET  /media           (admin)
     const mediaResource = this.restApi.root.addResource("media");
-    mediaResource.addMethod("GET", integration("media"), mockMethodOptions(withAuth));
+    mediaResource.addMethod("GET", integration("media"), methodOptions(withAuth));
 
     const mediaUploadResource = mediaResource.addResource("upload");
-    mediaUploadResource.addMethod("POST", integration("media"), mockMethodOptions(withAuth));
+    mediaUploadResource.addMethod("POST", integration("media"), methodOptions(withAuth));
 
     const mediaConfirmResource = mediaResource.addResource("confirm");
-    mediaConfirmResource.addMethod("POST", integration("media"), mockMethodOptions(withAuth));
+    mediaConfirmResource.addMethod("POST", integration("media"), methodOptions(withAuth));
 
     // DELETE /media/{id}  (admin)
     const mediaByIdResource = mediaResource.addResource("{id}");
-    mediaByIdResource.addMethod("DELETE", integration("media"), mockMethodOptions(withAuth));
+    mediaByIdResource.addMethod("DELETE", integration("media"), methodOptions(withAuth));
 
     // POST /contact          (public)
     // GET  /contact          (admin)
     const contactResource = this.restApi.root.addResource("contact");
-    contactResource.addMethod("POST", integration("contact"), mockMethodOptions());
-    contactResource.addMethod("GET", integration("contact"), mockMethodOptions(withAuth));
+    contactResource.addMethod("POST", integration("contact"), methodOptions());
+    contactResource.addMethod("GET", integration("contact"), methodOptions(withAuth));
 
     // GET   /contact/{id}    (admin)
     // PATCH /contact/{id}    (admin)
     const contactByIdResource = contactResource.addResource("{id}");
-    contactByIdResource.addMethod("GET", integration("contact"), mockMethodOptions(withAuth));
-    contactByIdResource.addMethod("PATCH", integration("contact"), mockMethodOptions(withAuth));
+    contactByIdResource.addMethod("GET", integration("contact"), methodOptions(withAuth));
+    contactByIdResource.addMethod("PATCH", integration("contact"), methodOptions(withAuth));
 
     // -------------------------------------------------------------------------
     // CloudFormation Outputs
