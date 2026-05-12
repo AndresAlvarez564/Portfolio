@@ -6,37 +6,47 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 
+interface PipelineStackProps extends cdk.StackProps {
+  // "dev" watches the dev branch and deploys portfolio-dev-AppStack
+  // "prod" watches the prod branch and deploys portfolio-prod-AppStack
+  stage: "dev" | "prod";
+}
+
 export class PipelineStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
 
+    const { stage } = props;
+    const stackName = `portfolio-${stage}-AppStack`;
+    const branch = stage; // branch name matches stage name: dev → dev, prod → prod
+
     // -------------------------------------------------------------------------
-    // Pipeline artifact bucket
+    // Pipeline artifact bucket — one per stage
     // -------------------------------------------------------------------------
     const artifactBucket = new s3.Bucket(this, "ArtifactBucket", {
-      bucketName: `portfolio-pipeline-artifacts-${cdk.Aws.ACCOUNT_ID}`,
+      bucketName: `portfolio-${stage}-pipeline-artifacts-${cdk.Aws.ACCOUNT_ID}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
-      // Keep artifacts for 30 days
       lifecycleRules: [{ expiration: cdk.Duration.days(30) }],
     });
 
     // -------------------------------------------------------------------------
-    // CodeBuild project
+    // CodeBuild project — one per stage, uses the same buildspec.yml
+    // The STAGE env var tells buildspec which AppStack to deploy
     // -------------------------------------------------------------------------
     const buildProject = new codebuild.PipelineProject(this, "BuildProject", {
-      projectName: "portfolio-build",
-      description: "Builds and deploys the Portfolio CRM application",
+      projectName: `portfolio-${stage}-build`,
+      description: `Builds and deploys portfolio-${stage}-AppStack`,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
         computeType: codebuild.ComputeType.SMALL,
         environmentVariables: {
-          // These are non-sensitive — real secrets come from Parameter Store at build time
           CDK_DEFAULT_REGION: { value: this.region },
           CDK_DEFAULT_ACCOUNT: { value: this.account },
+          DEPLOY_STAGE: { value: stage },
         },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename("buildspec.yml"),
@@ -67,30 +77,26 @@ export class PipelineStack extends cdk.Stack {
     }));
 
     // -------------------------------------------------------------------------
-    // Pipeline artifacts
-    // -------------------------------------------------------------------------
-    const sourceOutput = new codepipeline.Artifact("SourceOutput");
-    const buildOutput = new codepipeline.Artifact("BuildOutput");
-
-    // -------------------------------------------------------------------------
-    // GitHub source connection
-    // NOTE: The GitHub connection ARN must be created manually in the AWS Console
-    // under Developer Tools → Connections, then set as a Parameter Store value.
+    // GitHub source connection — shared ARN, different branch per stage
     // -------------------------------------------------------------------------
     const githubConnectionArn = cdk.aws_ssm.StringParameter.valueForStringParameter(
       this,
       "/portfolio/pipeline/github-connection-arn",
     );
 
+    const sourceOutput = new codepipeline.Artifact("SourceOutput");
+    const buildOutput  = new codepipeline.Artifact("BuildOutput");
+
     // -------------------------------------------------------------------------
-    // CodePipeline
+    // CodePipeline — one per stage
+    // dev pipeline:  push to dev  → deploy portfolio-dev-AppStack
+    // prod pipeline: push to prod → deploy portfolio-prod-AppStack
     // -------------------------------------------------------------------------
     new codepipeline.Pipeline(this, "Pipeline", {
-      pipelineName: "portfolio-pipeline",
+      pipelineName: `portfolio-${stage}-pipeline`,
       artifactBucket,
       pipelineType: codepipeline.PipelineType.V2,
       stages: [
-        // Stage 1: Source — pull from GitHub
         {
           stageName: "Source",
           actions: [
@@ -104,14 +110,13 @@ export class PipelineStack extends cdk.Stack {
                 this,
                 "/portfolio/pipeline/github-repo",
               ),
-              branch: "dev",
+              branch,
               connectionArn: githubConnectionArn,
               output: sourceOutput,
               triggerOnPush: true,
             }),
           ],
         },
-        // Stage 2: Build — install, test, synth, deploy
         {
           stageName: "Build",
           actions: [
@@ -130,13 +135,13 @@ export class PipelineStack extends cdk.Stack {
     // CloudFormation Outputs
     // -------------------------------------------------------------------------
     new cdk.CfnOutput(this, "PipelineName", {
-      value: "portfolio-pipeline",
-      description: "CodePipeline name",
+      value: `portfolio-${stage}-pipeline`,
+      description: `CodePipeline name for ${stage}`,
     });
 
-    new cdk.CfnOutput(this, "BuildProjectName", {
-      value: buildProject.projectName,
-      description: "CodeBuild project name",
+    new cdk.CfnOutput(this, "TargetStack", {
+      value: stackName,
+      description: `AppStack deployed by this pipeline`,
     });
   }
 }

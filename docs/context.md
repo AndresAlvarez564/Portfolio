@@ -104,7 +104,6 @@ Visitor fills contact form → frontend calls `POST /contact` → Lambda validat
 | Region | `us-east-1` |
 | Project name (CDK) | `portfolio` |
 | Dev environment | `portfolio-dev` |
-| Staging environment | `portfolio-staging` |
 | Prod environment | `portfolio-prod` |
 
 ---
@@ -532,23 +531,19 @@ AWS Well-Architected Knowledge:
 
 ## 17. Current Status
 
-**Phase:** Initial planning and architecture design
+**Phase:** Phase 2 — Feature development in progress
 
 **Completed:**
-- Portfolio concept defined
-- Professional positioning clarified
-- Featured projects identified
-- Tech stack selected
-- Documentation structure created
+- All Phase 1 tickets (TK-01 to TK-22) — architecture, infrastructure, frontend foundation
+- TK-23 — First deploy to dev (AppStack deployed, admin user created, PROFILE_SETTINGS seeded)
+- TK-24 — Profile module (GET/PUT /profile, AboutPage, ProfileSettingsPage)
 
 **In progress:**
-- Phase 1 mandatory opening tickets (TK-01 to TK-22)
-- Architecture design
-- Data model design
-- Infrastructure setup
+- Phase 2 project tickets (TK-25 onwards)
+- Setting up CI/CD pipeline (dev and prod pipelines)
 
 **Pending:**
-- Phase 2 project tickets (feature development)
+- Phase 2 remaining feature tickets (projects, experience, skills, certifications, media, contact)
 - Phase 3 mandatory closing tickets (security, monitoring, deployment)
 
 ---

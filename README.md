@@ -1,74 +1,85 @@
-# <project-name>
+# Portfolio CRM
 
-Replace this with a short description of the project.
+Personal portfolio management system built on AWS serverless architecture.
+
+**Public site** — projects, experience, skills, certifications, contact form.  
+**Admin panel** — protected CMS to manage all portfolio content without editing code.
 
 ---
 
-## Quick Start
+## Tech Stack
 
-### Prerequisites
-
-| Tool | Version |
+| Layer | Technology |
 |---|---|
-| Node.js | 20.x or later |
-| Python | 3.12 |
-| AWS CLI | v2 |
-| AWS CDK | latest |
+| Frontend | React + Vite + TypeScript + TailwindCSS + Ant Design |
+| Backend | Python 3.12 Lambda functions |
+| Database | Amazon DynamoDB (single-table design) |
+| Auth | Amazon Cognito |
+| API | Amazon API Gateway REST API |
+| Storage | Amazon S3 + CloudFront |
+| Email | Amazon SES + SQS |
+| Infrastructure | AWS CDK TypeScript |
+| CI/CD | CodePipeline + CodeBuild + CodeDeploy |
 
-### Setup
+---
 
-```bash
-# Configure AWS profiles
-aws configure --profile <project-name>-dev
-aws configure --profile <project-name>-staging
-aws configure --profile <project-name>-prod
+## Repository Structure
 
-# Install CDK dependencies
-cd infra && npm ci
-
-# Deploy to dev
-npx cdk deploy --all --profile <project-name>-dev
-
-# Run frontend locally
-cd front && npm ci && npm run dev
+```text
+/
+├── front/          # React frontend
+├── lambdas/        # Python Lambda functions (one per domain)
+├── infra/          # AWS CDK infrastructure
+├── scripts/        # One-time setup scripts (seed data, etc.)
+├── docs/           # Architecture, tickets, and project settings
+└── buildspec.yml   # CodeBuild pipeline definition
 ```
 
 ---
 
-## Project Structure
+## Branching Strategy
 
-```text
-/
-├── front/        → React frontend (Vite + TypeScript + Ant Design)
-├── lambdas/      → Python Lambda functions
-├── infra/        → AWS CDK infrastructure (TypeScript)
-├── docs/
-│   ├── config.md           → reusable technical standard
-│   ├── context.md          → project context for AI sessions
-│   ├── project-settings/   → project-specific documentation
-│   └── tickets/            → project tickets
-└── README.md
+| Branch | Purpose | Pipeline |
+|---|---|---|
+| `dev` | Development and testing | Deploys to `portfolio-dev-AppStack` |
+| `prod` | Production | Deploys to `portfolio-prod-AppStack` |
+| `main` | Progress backup / history | No pipeline |
+| `feature/tk-xx-*` | Feature work | Merge into `dev` |
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- Python 3.12
+- AWS CLI configured (default profile)
+- AWS CDK: `npm install -g aws-cdk`
+
+### Frontend
+
+```bash
+cd front
+cp .env.example .env.local   # fill in values from CloudFormation outputs
+npm install
+npm run dev
+```
+
+### Deploy to dev (manual)
+
+```bash
+cd infra
+npm install
+npm run build
+npx cdk deploy portfolio-dev-AppStack
 ```
 
 ---
 
 ## Documentation
 
-| Document | Purpose |
-|---|---|
-| `docs/config.md` | Reusable technical standards for this stack |
-| `docs/context.md` | Project context — paste into AI chats |
-| `docs/project-settings/architecture.md` | System architecture |
-| `docs/project-settings/backend.md` | Lambda modules and business logic |
-| `docs/project-settings/database.md` | DynamoDB table design and access patterns |
-| `docs/project-settings/deployment.md` | Deployment steps and rollback |
-
----
-
-## Branching Strategy
-
-```
-feature/* → dev → develop → main
-              ↓       ↓        ↓
-             dev   staging   prod
-```
+- `docs/config.md` — reusable technical standards and conventions
+- `docs/context.md` — project context for AI sessions
+- `docs/project-settings/` — architecture, database, backend, frontend, deployment docs
+- `docs/tickets/` — development tickets (TK-01 onwards)

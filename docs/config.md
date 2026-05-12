@@ -1692,45 +1692,45 @@ Rules:
 
 ---
 
-## 28. Git Branching Strategy
+## 8. Git Branching Strategy
 
 Recommended branch model:
 
 ```text
-main       → triggers prod deployment
-develop    → triggers staging deployment
+main       → backup and history, no pipeline attached
 dev        → triggers dev environment deployment
+prod       → triggers prod environment deployment
 feature/*  → local development, merged into dev
-hotfix/*   → urgent fixes, merged into main and develop
+hotfix/*   → urgent fixes, merged into prod and dev
 ```
 
 Full promotion flow:
 
 ```text
-feature/* → dev → develop → main
-             ↓       ↓        ↓
-            dev   staging   prod
+feature/* → dev → prod
+             ↓      ↓
+            dev    prod
 ```
 
 Rules:
 
-- Never push directly to `main` or `develop`.
+- Never push directly to `prod`.
 - Feature branches merge into `dev` first.
-- After validation in dev environment, `dev` merges into `develop` for staging.
-- After staging validation, `develop` merges into `main` for production.
-- `hotfix/*` branches are the only exception — they merge directly into `main` and back into `develop`.
-- Use pull requests for all merges.
+- After validation in dev environment, `dev` merges into `prod` for production.
+- `main` is used for saving progress and history — no pipeline is attached to it.
+- `hotfix/*` branches are the only exception — they merge directly into `prod` and back into `dev`.
+- Use pull requests for all merges into `prod`.
 - Branch names should be lowercase with hyphens.
 - Delete feature branches after merging into `dev`.
-- Tag releases on `main` using semantic versioning: `v1.0.0`.
+- Tag releases on `prod` using semantic versioning: `v1.0.0`.
 
 Merge requirements per target branch:
 
 | Target | Requirements |
 |---|---|
 | `dev` | Tasks complete, tested locally, no secrets committed |
-| `develop` | Tested in dev environment, PR reviewed and approved |
-| `main` | All Phase 3 closing tickets done, staging validated, release plan documented |
+| `prod` | Tested in dev environment, PR reviewed and approved |
+| `main` | Any time — used for saving progress |
 
 Example branch names:
 

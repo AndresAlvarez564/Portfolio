@@ -1,15 +1,16 @@
 version: 0.2
 
-# Portfolio CRM — CodeBuild build specification
-# Runs on every push to the dev branch via CodePipeline.
+# Portfolio — CodeBuild build specification
+# Used by both dev and prod pipelines.
+# The DEPLOY_STAGE env var is set by the pipeline: "dev" or "prod"
 #
-# Stages:
-#   1. Install dependencies (infra + frontend + Lambda dev deps)
-#   2. Run Lambda unit tests
-#   3. Run frontend tests
+# Flow:
+#   1. Install dependencies
+#   2. Run Lambda unit tests  ← blocks deploy on failure
+#   3. Run frontend tests     ← blocks deploy on failure
 #   4. Build frontend
-#   5. CDK synth + deploy AppStack
-#   6. Upload frontend build to S3
+#   5. CDK synth + deploy portfolio-<DEPLOY_STAGE>-AppStack
+#   6. Upload frontend to S3
 #   7. Invalidate CloudFront cache
 
 phases:
@@ -18,56 +19,42 @@ phases:
       nodejs: 20
       python: 3.12
     commands:
-      # Install CDK globally
       - npm install -g aws-cdk
-      # Install infra dependencies
       - cd infra && npm ci && cd ..
-      # Install frontend dependencies
       - cd front && npm ci && cd ..
-      # Install Lambda test dependencies
       - cd lambdas && pip install -r requirements-dev.txt && cd ..
 
   pre_build:
     commands:
-      # Run Lambda unit tests — a failing test blocks the deployment
-      - echo "Running Lambda unit tests..."
+      - echo "Running Lambda unit tests (stage=$DEPLOY_STAGE)..."
       - cd lambdas && pytest --tb=short -q && cd ..
-      # Run frontend tests
       - echo "Running frontend tests..."
       - cd front && npm run test -- --run && cd ..
 
   build:
     commands:
-      # Build frontend
       - echo "Building frontend..."
       - cd front && npm run build && cd ..
-      # CDK synth — validates the infrastructure before deploying
       - echo "Synthesizing CDK app..."
       - cd infra && npm run build && npx cdk synth && cd ..
-      # Deploy AppStack to dev
-      - echo "Deploying AppStack to dev..."
-      - cd infra && npx cdk deploy portfolio-dev-AppStack --require-approval never && cd ..
+      - echo "Deploying portfolio-${DEPLOY_STAGE}-AppStack..."
+      - cd infra && npx cdk deploy portfolio-${DEPLOY_STAGE}-AppStack --require-approval never && cd ..
 
   post_build:
     commands:
-      # Read CloudFormation outputs to get bucket name and distribution ID
       - |
         FRONTEND_BUCKET=$(aws cloudformation describe-stacks \
-          --stack-name portfolio-dev-AppStack \
-          --query "Stacks[0].Outputs[?ExportName=='portfolio-dev-frontend-bucket'].OutputValue" \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-frontend-bucket'].OutputValue" \
           --output text)
         DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
-          --stack-name portfolio-dev-AppStack \
-          --query "Stacks[0].Outputs[?ExportName=='portfolio-dev-frontend-distribution-id'].OutputValue" \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-frontend-distribution-id'].OutputValue" \
           --output text)
-        echo "Frontend bucket: $FRONTEND_BUCKET"
-        echo "Distribution ID: $DISTRIBUTION_ID"
-      # Upload frontend build to S3
-      - echo "Uploading frontend to S3..."
-      - aws s3 sync front/dist s3://$FRONTEND_BUCKET --delete
-      # Invalidate CloudFront cache so users get the new version immediately
-      - echo "Invalidating CloudFront cache..."
-      - aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+        echo "Uploading frontend to s3://$FRONTEND_BUCKET..."
+        aws s3 sync front/dist s3://$FRONTEND_BUCKET --delete
+        echo "Invalidating CloudFront distribution $DISTRIBUTION_ID..."
+        aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
 
 artifacts:
   files:
