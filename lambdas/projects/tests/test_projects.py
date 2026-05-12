@@ -1,6 +1,3 @@
-# test_projects.py — unit tests for the projects domain
-# Run with: pytest
-
 import pytest
 from routes.projects import (
     list_projects,
@@ -51,11 +48,12 @@ def test_patch_project_requires_admin_group():
         patch_project(_public_event(), "some-id")
 
 
-def test_get_case_study_requires_admin_group():
-    with pytest.raises(PermissionError):
-        get_case_study(_public_event(), "some-id")
-
-
 def test_upsert_case_study_requires_admin_group():
     with pytest.raises(PermissionError):
         upsert_case_study(_public_event(), "some-id")
+
+
+def test_get_case_study_returns_200():
+    # get_case_study is public — returns empty object when no case study exists
+    response = get_case_study({}, "some-id")
+    assert response["statusCode"] == 200

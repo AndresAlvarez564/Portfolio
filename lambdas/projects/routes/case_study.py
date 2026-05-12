@@ -6,8 +6,7 @@ from utils.auth import require_group
 
 
 def get_case_study(event, project_id):
-    """GET /projects/{id}/case-study — admin only. Returns case study for a project."""
-    require_group(event, "admin")
+    """GET /projects/{id}/case-study — public. Returns case study for a project."""
     # TODO: implement — GetItem pk=PROJECT#<id> sk=CASE_STUDY
     return success({})
 
