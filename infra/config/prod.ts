@@ -6,7 +6,7 @@ export const prodConfig: EnvironmentConfig = {
   region: "us-east-1",
   removalPolicy: "retain",
   enablePitr: true,
-  enableWaf: true,
+  enableWaf: false,
   lambdaMemory: 512,
   lambdaTimeoutSeconds: 15,
 };

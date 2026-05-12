@@ -1,7 +1,10 @@
 import * as cdk from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
+import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 import { Construct } from "constructs";
 import { Duration } from "aws-cdk-lib";
 import { EnvironmentConfig } from "../../config/dev";
@@ -9,6 +12,7 @@ import { EnvironmentConfig } from "../../config/dev";
 interface LambdasConstructProps {
   config: EnvironmentConfig;
   table: dynamodb.Table;
+  mediaBucket: s3.Bucket;
 }
 
 // Business domains — each maps to a Lambda function and a lambdas/<domain>/ folder
@@ -25,12 +29,17 @@ const DOMAINS = [
 type Domain = typeof DOMAINS[number];
 
 export class LambdasConstruct extends Construct {
+  // Expose aliases — API Gateway and other consumers use the `live` alias,
+  // never $LATEST directly. Aliases are IFunction-compatible.
+  public readonly aliases: Record<string, lambda.Alias> = {};
+
+  // Also expose raw functions for monitoring (metrics are on the function, not the alias)
   public readonly functions: Record<string, lambda.Function> = {};
 
   constructor(scope: Construct, id: string, props: LambdasConstructProps) {
     super(scope, id);
 
-    const { config, table } = props;
+    const { config, table, mediaBucket } = props;
 
     const logRetention = config.stage === "prod"
       ? logs.RetentionDays.ONE_YEAR
@@ -38,9 +47,15 @@ export class LambdasConstruct extends Construct {
         ? logs.RetentionDays.THREE_MONTHS
         : logs.RetentionDays.ONE_MONTH;
 
+    // Pick CodeDeploy deployment strategy based on environment
+    const deploymentConfig = this.deploymentConfig(config.stage);
+
     for (const domain of DOMAINS) {
-      const fn = this.createDomainFunction(domain, config, table, logRetention);
+      const { fn, alias } = this.createDomainFunction(
+        domain, config, table, mediaBucket, logRetention, deploymentConfig,
+      );
       this.functions[domain] = fn;
+      this.aliases[domain] = alias;
     }
   }
 
@@ -48,9 +63,24 @@ export class LambdasConstruct extends Construct {
     domain: Domain,
     config: EnvironmentConfig,
     table: dynamodb.Table,
+    mediaBucket: s3.Bucket,
     logRetention: logs.RetentionDays,
-  ): lambda.Function {
-    const fn = new lambda.Function(this, `${capitalize(domain)}Function`, {
+    deploymentConfig: codedeploy.ILambdaDeploymentConfig,
+  ): { fn: lambda.Function; alias: lambda.Alias } {
+    // --- Base environment variables ---
+    const environment: Record<string, string> = {
+      STAGE: config.stage,
+      TABLE_NAME: table.tableName,
+      LOG_LEVEL: config.stage === "prod" ? "WARNING" : "DEBUG",
+      POWERTOOLS_SERVICE_NAME: `${config.projectName}-${domain}`,
+    };
+
+    if (domain === "media") {
+      environment["MEDIA_BUCKET_NAME"] = mediaBucket.bucketName;
+    }
+
+    // --- Lambda function ---
+    const fn = new lambda.Function(this, `${cap(domain)}Function`, {
       functionName: `${config.projectName}-${config.stage}-${domain}`,
       description: `Portfolio CRM — ${domain} domain handler`,
       runtime: lambda.Runtime.PYTHON_3_12,
@@ -61,21 +91,60 @@ export class LambdasConstruct extends Construct {
       timeout: Duration.seconds(config.lambdaTimeoutSeconds),
       tracing: lambda.Tracing.ACTIVE,
       logRetention,
-      environment: {
-        STAGE: config.stage,
-        TABLE_NAME: table.tableName,
-        LOG_LEVEL: config.stage === "prod" ? "WARNING" : "DEBUG",
-        POWERTOOLS_SERVICE_NAME: `${config.projectName}-${domain}`,
-      },
+      environment,
     });
 
-    // Grant read/write access to the DynamoDB table
     table.grantReadWriteData(fn);
+    if (domain === "media") {
+      mediaBucket.grantReadWrite(fn);
+    }
 
-    return fn;
+    // --- Lambda version (immutable snapshot used by CodeDeploy) ---
+    const version = fn.currentVersion;
+
+    // --- live alias — API Gateway always calls this, never $LATEST ---
+    const alias = new lambda.Alias(this, `${cap(domain)}LiveAlias`, {
+      aliasName: "live",
+      version,
+    });
+
+    // --- CloudWatch error alarm — used by CodeDeploy for automatic rollback ---
+    const errorAlarm = new cloudwatch.Alarm(this, `${cap(domain)}ErrorAlarm`, {
+      alarmName: `${config.projectName}-${config.stage}-${domain}-errors-alarm`,
+      metric: fn.metricErrors({ period: Duration.minutes(1) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // --- CodeDeploy deployment group ---
+    // Shifts traffic from the old alias version to the new one.
+    // If the error alarm fires during the shift, CodeDeploy rolls back automatically.
+    new codedeploy.LambdaDeploymentGroup(this, `${cap(domain)}DeploymentGroup`, {
+      alias,
+      deploymentConfig,
+      alarms: [errorAlarm],
+    });
+
+    return { fn, alias };
+  }
+
+  private deploymentConfig(stage: string): codedeploy.ILambdaDeploymentConfig {
+    switch (stage) {
+      case "prod":
+        // Shift 10% of traffic, wait 5 minutes, then shift the rest.
+        // Rolls back automatically if the error alarm fires.
+        return codedeploy.LambdaDeploymentConfig.CANARY_10PERCENT_5MINUTES;
+      case "staging":
+        // Shift 10% every minute until 100%.
+        return codedeploy.LambdaDeploymentConfig.LINEAR_10PERCENT_EVERY_1MINUTE;
+      default:
+        // Dev: shift all traffic at once — fast feedback, no real users.
+        return codedeploy.LambdaDeploymentConfig.ALL_AT_ONCE;
+    }
   }
 }
 
-function capitalize(s: string): string {
+function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

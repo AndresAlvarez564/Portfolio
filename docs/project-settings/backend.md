@@ -1,17 +1,270 @@
 # Backend
 
-> Status: Initial draft — update as Lambda modules are added.
-> Assigned ticket: TK-16 (initial) → TK-LAST+14 (final)
+> Status: Initial draft — update as Lambda modules are implemented in Phase 2.
+> Assigned ticket: TK-16 (initial draft)
+
+---
+
+## Overview
+
+The backend is a set of Python 3.12 Lambda functions, one per business domain. Each function handles all routes for its domain. There is no shared runtime or monolithic handler — each Lambda is deployed, versioned, and monitored independently.
+
+All Lambda functions are deployed via CodeDeploy using the `live` alias. API Gateway always calls the `live` alias, never `$LATEST`.
+
+---
 
 ## Lambda Modules
 
-<!-- List each Lambda domain and what it handles. -->
+| Function name | Domain | Routes handled |
+|---|---|---|
+| `portfolio-<stage>-profile` | Profile settings | `GET /profile`, `PUT /profile` |
+| `portfolio-<stage>-projects` | Projects and case studies | `GET/POST /projects`, `GET/PUT/DELETE/PATCH /projects/{slug}`, `GET /projects/admin`, `GET /projects/{id}/admin`, `GET/PUT /projects/{id}/case-study` |
+| `portfolio-<stage>-experience` | Experience entries | `GET/POST /experience`, `PATCH /experience/reorder`, `PUT/DELETE /experience/{id}` |
+| `portfolio-<stage>-skills` | Skills | `GET/POST /skills`, `PUT/DELETE /skills/{id}` |
+| `portfolio-<stage>-certifications` | Certifications | `GET/POST /certifications`, `PUT/DELETE /certifications/{id}` |
+| `portfolio-<stage>-media` | Media uploads | `GET /media`, `POST /media/upload`, `POST /media/confirm`, `DELETE /media/{id}` |
+| `portfolio-<stage>-contact` | Contact messages | `POST /contact`, `GET /contact`, `GET/PATCH /contact/{id}` |
 
-## Business Rules
+---
 
-<!-- Document the key business rules enforced in the backend. -->
+## Folder Structure
+
+Each Lambda follows the same structure:
+
+```text
+lambdas/<domain>/
+├── conftest.py          # pytest sys.path setup — required for CodeBuild test runner
+├── handler.py           # Entry point — routing only, no business logic
+├── routes/
+│   └── <domain>.py      # Route handler functions
+├── utils/
+│   ├── auth.py          # Authorization helpers
+│   └── response.py      # Standard response helpers
+└── tests/
+    └── test_<domain>.py # Unit tests
+```
+
+The `projects` domain has an additional route file:
+
+```text
+lambdas/projects/
+├── routes/
+│   ├── projects.py      # Project CRUD and listing
+│   └── case_study.py    # Case study get and upsert
+```
+
+---
+
+## handler.py Pattern
+
+`handler.py` is the Lambda entry point. It reads `httpMethod` and `path` from the API Gateway event and dispatches to the correct route function. It contains no business logic.
+
+```python
+def lambda_handler(event, context):
+    http_method = event.get("httpMethod", "")
+    path = event.get("path", "")
+
+    if http_method == "GET" and path == "/profile":
+        return profile.get_profile(event)
+
+    if http_method == "PUT" and path == "/profile":
+        return profile.update_profile(event)
+
+    return {
+        "statusCode": 404,
+        "body": json.dumps({"error": {"code": "NOT_FOUND", "message": "Route not found."}}),
+    }
+```
+
+For routes with path parameters, `re.match` extracts the ID or slug:
+
+```python
+match = re.match(r"^/projects/([^/]+)$", path)
+if match:
+    slug_or_id = match.group(1)
+    if http_method == "GET":
+        return projects.get_project_by_slug(event, slug_or_id)
+```
+
+Rules:
+- Static paths (e.g. `/projects/admin`) must be matched before dynamic paths (e.g. `/projects/{slug}`) to avoid false matches.
+- `handler.py` never touches DynamoDB, S3, or any AWS service directly.
+
+---
+
+## routes/ Pattern
+
+Route files contain the business logic. Each function receives the full API Gateway `event` and returns a standard response dict.
+
+```python
+from utils.response import success, error
+from utils.auth import require_group
+
+def get_profile(event):
+    """GET /profile — public. Returns sanitized profile settings."""
+    # TODO: query DynamoDB pk=PROFILE sk=SETTINGS, exclude sensitive fields
+    return success({})
+
+def update_profile(event):
+    """PUT /profile — admin only."""
+    require_group(event, "admin")
+    # TODO: validate body, update DynamoDB
+    return success({})
+```
+
+Rules:
+- Every admin route must call `require_group(event, "admin")` as the first line.
+- Never skip the group check — API Gateway validates the token, but not the group.
+- Return `success(data)` on success, `error(code, message, status_code)` on failure.
+- Never return raw exceptions or stack traces in the response body.
+
+---
+
+## utils/auth.py
+
+Extracts Cognito group membership from the API Gateway request context and enforces it.
+
+```python
+def get_user_groups(event):
+    """Extract Cognito groups from the request context."""
+    claims = event.get("requestContext", {}).get("authorizer", {}).get("claims", {})
+    groups = claims.get("cognito:groups", "")
+    return groups.split(",") if groups else []
+
+def require_group(event, group):
+    """Raise a PermissionError if the user is not in the required group."""
+    if group not in get_user_groups(event):
+        raise PermissionError(f"User is not in group: {group}")
+```
+
+How claims reach the Lambda:
+1. Frontend sends `Authorization: Bearer <id-token>` header.
+2. API Gateway validates the token with the Cognito Authorizer.
+3. API Gateway injects decoded claims into `event["requestContext"]["authorizer"]["claims"]`.
+4. Lambda reads `cognito:groups` from claims.
+
+If `require_group` raises `PermissionError`, the route handler must catch it and return a `403` response. This will be standardized in Phase 2 with a shared exception handler.
+
+---
+
+## utils/response.py
+
+Ensures every Lambda returns the same response shape.
+
+```python
+def success(data, status_code=200):
+    return {
+        "statusCode": status_code,
+        "body": json.dumps({"data": data}),
+    }
+
+def error(code, message, status_code=400):
+    return {
+        "statusCode": status_code,
+        "body": json.dumps({"error": {"code": code, "message": message}}),
+    }
+```
+
+Success shape:
+```json
+{ "data": { ... } }
+```
+
+Error shape:
+```json
+{ "error": { "code": "VALIDATION_ERROR", "message": "The title field is required." } }
+```
+
+---
+
+## Environment Variables
+
+Every Lambda receives these environment variables at runtime:
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `STAGE` | `dev` / `staging` / `prod` | Current environment |
+| `TABLE_NAME` | DynamoDB table name | Main table for all entities |
+| `LOG_LEVEL` | `DEBUG` (dev/staging) / `WARNING` (prod) | Logging verbosity |
+| `POWERTOOLS_SERVICE_NAME` | `portfolio-<domain>` | Lambda Powertools service name |
+
+The `media` Lambda also receives:
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `MEDIA_BUCKET_NAME` | S3 bucket name | Target bucket for pre-signed URL generation |
+
+---
 
 ## Error Handling
 
-<!-- Reference the standard error shape from config.md section 23. -->
-<!-- Document any project-specific error codes here. -->
+Standard HTTP status codes used across all routes:
+
+| Code | When to use |
+|---|---|
+| `200` | Successful GET, PUT, PATCH |
+| `201` | Successful POST that creates a resource |
+| `400` | Invalid input, missing required fields, business rule violation |
+| `401` | Not authenticated — missing or invalid token (handled by API Gateway) |
+| `403` | Authenticated but not in the required Cognito group |
+| `404` | Resource not found |
+| `409` | Conflict — duplicate slug, uniqueness violation |
+| `500` | Unexpected server error |
+
+Standard error codes:
+
+| Code | Meaning |
+|---|---|
+| `VALIDATION_ERROR` | Missing or invalid input field |
+| `NOT_FOUND` | Requested resource does not exist |
+| `DUPLICATE_RECORD` | Uniqueness rule violated (e.g. duplicate slug) |
+| `FORBIDDEN` | User does not have permission |
+| `INTERNAL_ERROR` | Unexpected server error |
+
+---
+
+## Testing
+
+Tests live inside each Lambda's `tests/` folder and run in CodeBuild via:
+
+```bash
+cd lambdas && pytest --tb=short -q
+```
+
+Each Lambda has a `conftest.py` at its root that adds the Lambda directory to `sys.path`, allowing `from routes.profile import ...` to resolve correctly when pytest runs from the `lambdas/` directory.
+
+Current test coverage (Phase 1 — placeholder tests):
+- Public routes return `200`
+- All admin routes raise `PermissionError` when called without the `admin` group
+
+Phase 2 feature tickets will add real business logic tests using `moto` to mock DynamoDB.
+
+Test dependencies are in `lambdas/requirements-dev.txt`:
+
+```text
+pytest==8.3.5
+moto[dynamodb]==5.1.5
+boto3==1.38.0
+```
+
+---
+
+## Business Rules
+
+Business logic will be implemented in Phase 2 feature tickets. Key rules to enforce in each domain:
+
+| Domain | Key rules |
+|---|---|
+| `profile` | Public response must exclude `email` and internal fields |
+| `projects` | Public response returns only `status = published` items; slug must be unique |
+| `experience` | Ordered by `order` field; reorder updates `gsi1sk` for all affected items |
+| `skills` | Public response returns only `visibility = visible` items |
+| `certifications` | No special filtering — all certifications are public |
+| `media` | Pre-signed URL valid for 5 minutes; CV upload replaces previous CV in `PROFILE_SETTINGS` |
+| `contact` | Honeypot field must be empty; rate limit by IP; message length limits apply |
+
+---
+
+**Last Updated:** 2026-05-11
+**Status:** Initial draft
+**Next:** Update this document as Phase 2 feature tickets are implemented

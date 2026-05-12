@@ -8,7 +8,8 @@ import { EnvironmentConfig } from "../../config/dev";
 
 interface ApiConstructProps {
   config: EnvironmentConfig;
-  lambdas: Record<string, lambda.Function>;
+  // Aliases are IFunction-compatible — API Gateway calls the `live` alias, never $LATEST
+  lambdas: Record<string, lambda.IFunction>;
   userPool: cognito.UserPool;
 }
 
