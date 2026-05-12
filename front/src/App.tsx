@@ -7,11 +7,13 @@ import { ROUTES } from "./constants";
 // Public pages
 import HomePage from "./pages/public/HomePage";
 import ProjectsPage from "./pages/public/ProjectsPage";
+import AboutPage from "./pages/public/AboutPage";
 import NotFoundPage from "./pages/public/NotFoundPage";
 
 // Admin pages
 import LoginPage from "./pages/admin/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
+import ProfileSettingsPage from "./pages/admin/ProfileSettingsPage";
 
 const App = () => {
   return (
@@ -22,6 +24,7 @@ const App = () => {
           {/* Public routes */}
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
+          <Route path={ROUTES.ABOUT} element={<AboutPage />} />
 
           {/* Admin routes — protected */}
           <Route path="/admin" element={<Navigate to={ROUTES.ADMIN_LOGIN} replace />} />
@@ -31,6 +34,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_SETTINGS}
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsPage />
               </ProtectedRoute>
             }
           />

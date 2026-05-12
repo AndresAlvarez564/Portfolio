@@ -1,0 +1,20 @@
+{
+  "portfolio-dev-main": [
+    {
+      "PutRequest": {
+        "Item": {
+          "pk":         { "S": "PROFILE" },
+          "sk":         { "S": "SETTINGS" },
+          "entityType": { "S": "PROFILE_SETTINGS" },
+          "name":       { "S": "Andres Isaac Alvarez Herrera" },
+          "title":      { "S": "Junior Solutions Architect" },
+          "summary":    { "S": "AWS-certified cloud professional building serverless applications on AWS." },
+          "location":   { "S": "Cochabamba, Bolivia" },
+          "email":      { "S": "andres@example.com" },
+          "socialLinks":{ "M": {} },
+          "updatedAt":  { "S": "2026-05-12T16:17:00Z" }
+        }
+      }
+    }
+  ]
+}
