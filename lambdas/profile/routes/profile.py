@@ -95,9 +95,9 @@ def update_profile(event):
         Key={"pk": "PROFILE", "sk": "SETTINGS"},
         UpdateExpression=(
             "SET #name = :name, title = :title, summary = :summary, "
-            "loc = :location, socialLinks = :socialLinks, updatedAt = :updatedAt"
+            "#location = :location, socialLinks = :socialLinks, updatedAt = :updatedAt"
         ),
-        ExpressionAttributeNames={"#name": "name", "loc": "location"},
+        ExpressionAttributeNames={"#name": "name", "#location": "location"},
         ExpressionAttributeValues={
             ":name": body["name"].strip(),
             ":title": body["title"].strip(),
