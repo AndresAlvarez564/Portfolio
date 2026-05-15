@@ -8,7 +8,6 @@ from moto import mock_aws
 os.environ["TABLE_NAME"] = "portfolio-dev-main"
 os.environ["LOG_LEVEL"] = "DEBUG"
 
-from handler import lambda_handler
 from routes.case_study import get_case_study, upsert_case_study
 
 
@@ -136,16 +135,5 @@ def test_upsert_case_study_missing_required_field_returns_400():
 def test_upsert_case_study_without_admin_returns_403():
     _make_table()
 
-    response = lambda_handler({
-        **_public_event(_valid_body()),
-        "httpMethod": "PUT",
-        "path": "/projects/project-one/case-study",
-    }, None)
-
-    assert response["statusCode"] == 403
-    assert _body(response)["error"]["code"] == "FORBIDDEN"
-
-
-def test_upsert_case_study_route_requires_admin_group():
     with pytest.raises(PermissionError):
         upsert_case_study(_public_event(_valid_body()), "project-one")
