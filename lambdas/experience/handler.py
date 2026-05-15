@@ -1,12 +1,19 @@
 # handler.py — routes requests to the correct route function
 # This file should only contain routing logic, not business logic.
 
-import json
 import re
 from routes import experience
+from utils.response import error
 
 
 def lambda_handler(event, context):
+    try:
+        return _route(event)
+    except PermissionError:
+        return error("FORBIDDEN", "User does not have permission.", 403)
+
+
+def _route(event):
     http_method = event.get("httpMethod", "")
     path = event.get("path", "")
 
@@ -32,7 +39,4 @@ def lambda_handler(event, context):
         if http_method == "DELETE":
             return experience.delete_experience(event, experience_id)
 
-    return {
-        "statusCode": 404,
-        "body": json.dumps({"error": {"code": "NOT_FOUND", "message": "Route not found."}}),
-    }
+    return error("NOT_FOUND", "Route not found.", 404)

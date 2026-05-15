@@ -8,6 +8,7 @@ import { ROUTES } from "./constants";
 import HomePage from "./pages/public/HomePage";
 import ProjectsPage from "./pages/public/ProjectsPage";
 import ProjectDetailPage from "./pages/public/ProjectDetailPage";
+import ExperiencePage from "./pages/public/ExperiencePage";
 import AboutPage from "./pages/public/AboutPage";
 import NotFoundPage from "./pages/public/NotFoundPage";
 
@@ -17,6 +18,7 @@ import DashboardPage from "./pages/admin/DashboardPage";
 import ProfileSettingsPage from "./pages/admin/ProfileSettingsPage";
 import ProjectsListPage from "./pages/admin/ProjectsListPage";
 import ProjectFormPage from "./pages/admin/ProjectFormPage";
+import AdminExperiencePage from "./pages/admin/ExperiencePage";
 
 const App = () => {
   return (
@@ -28,6 +30,7 @@ const App = () => {
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.PROJECTS} element={<ProjectsPage />} />
           <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
+          <Route path={ROUTES.EXPERIENCE} element={<ExperiencePage />} />
           <Route path={ROUTES.ABOUT} element={<AboutPage />} />
 
           {/* Admin routes — protected */}
@@ -70,6 +73,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ProjectFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_EXPERIENCE}
+            element={
+              <ProtectedRoute>
+                <AdminExperiencePage />
               </ProtectedRoute>
             }
           />

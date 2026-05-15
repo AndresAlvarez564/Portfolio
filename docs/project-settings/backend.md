@@ -299,6 +299,24 @@ Case studies are stored separately with `pk = PROJECT#<id>` and `sk = CASE_STUDY
 
 ---
 
+## Experience Module
+
+`lambdas/experience/routes/experience.py` implements ordered experience entries.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `GET` | `/experience` | Public | Queries `gsi1pk = EXPERIENCE`, sorted by `gsi1sk` |
+| `POST` | `/experience` | Admin | Validates input, assigns `order = count + 1`, creates an entry |
+| `PUT` | `/experience/{id}` | Admin | Replaces editable entry fields |
+| `DELETE` | `/experience/{id}` | Admin | Deletes the entry |
+| `PATCH` | `/experience/reorder` | Admin | Receives `orderedIds` and updates `order` plus `gsi1sk` |
+
+Reorder stores display order as a 1-based number and `gsi1sk = ORDER#<padded>`, for example `ORDER#001`.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented

@@ -306,6 +306,20 @@ Admin project routes are wrapped in `ProtectedRoute`; backend authorization stil
 
 `ProjectDetailPage` fetches the case study after loading the project by slug and renders the case study section only when data exists.
 
+### Experience pages
+
+The experience feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/experienceService.ts` | Typed API client for public list and admin mutations |
+| `front/src/types/experience.ts` | `Experience` and `ExperienceInput` types |
+| `front/src/pages/public/ExperiencePage.tsx` | Public timeline of ordered experience entries |
+| `front/src/pages/admin/ExperiencePage.tsx` | Admin CRUD list with native drag-and-drop reorder |
+| `front/src/components/admin/ExperienceForm.tsx` | Shared add/edit form with current-role end-date behavior |
+
+The admin reorder UI uses native HTML drag-and-drop and persists the full ordered ID list to `PATCH /experience/reorder`.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

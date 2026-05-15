@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { App, Avatar, Button, Layout, Menu, Space, Typography } from "antd";
 import {
   DashboardOutlined,
+  HistoryOutlined,
   FolderOpenOutlined,
   LogoutOutlined,
   SettingOutlined,
@@ -28,6 +29,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [signingOut, setSigningOut] = useState(false);
   const selectedKey = location.pathname.startsWith(ROUTES.ADMIN_PROJECTS)
     ? ROUTES.ADMIN_PROJECTS
+    : location.pathname.startsWith(ROUTES.ADMIN_EXPERIENCE)
+      ? ROUTES.ADMIN_EXPERIENCE
     : location.pathname;
 
   const handleSignOut = async () => {
@@ -64,6 +67,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               key: ROUTES.ADMIN_PROJECTS,
               icon: <FolderOpenOutlined />,
               label: "Projects",
+            },
+            {
+              key: ROUTES.ADMIN_EXPERIENCE,
+              icon: <HistoryOutlined />,
+              label: "Experience",
             },
             {
               key: ROUTES.ADMIN_SETTINGS,
