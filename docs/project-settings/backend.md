@@ -281,6 +281,8 @@ Routes:
 | `PUT` | `/projects/{id}` | Admin | Replaces editable metadata and refreshes GSI keys |
 | `DELETE` | `/projects/{id}` | Admin | Deletes the project metadata item |
 | `PATCH` | `/projects/{id}` | Admin | Updates `status`, `featured`, or `featuredOrder` |
+| `GET` | `/projects/{id}/case-study` | Public | Gets the optional case study item; returns `{}` when missing |
+| `PUT` | `/projects/{id}/case-study` | Admin | Creates or replaces the case study item |
 
 Slug uniqueness is enforced in Lambda by querying `gsi3`. Conflicts append `-2`, `-3`, and so on while keeping the slug within 80 characters.
 
@@ -292,6 +294,8 @@ GSI key update pattern:
 | `featured` / `featuredOrder` | `gsi2sk = FEATURED#<true|false>#<order>` |
 
 Project mutations log structured events for create, delete, and patch operations.
+
+Case studies are stored separately with `pk = PROJECT#<id>` and `sk = CASE_STUDY`. Upsert uses `PutItem` as a full replace and requires `problem`, `solution`, and `architecture`; `challenges` and `results` are optional. The public get route returns `{}` when a project has no case study because case studies are optional.
 
 ---
 

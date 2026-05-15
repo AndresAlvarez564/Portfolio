@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { App, Button, Card, Checkbox, Form, Input, InputNumber, Select, Space, Typography } from "antd";
+import { App, Button, Card, Checkbox, Form, Input, InputNumber, Select, Space, Tabs, Typography } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -13,6 +13,7 @@ import {
 } from "../../services/projectsService";
 import { ROUTES } from "../../constants";
 import type { ProjectInput } from "../../types/project";
+import CaseStudyForm from "../../components/admin/CaseStudyForm";
 
 const optionalUrl = yup
   .string()
@@ -129,7 +130,13 @@ const ProjectFormPage = () => {
         </div>
 
         <Card>
-          <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+          <Tabs
+            items={[
+              {
+                key: "project",
+                label: "Project",
+                children: (
+                  <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
             <Form.Item label="Title" validateStatus={errors.title ? "error" : ""} help={errors.title?.message}>
               <Controller name="title" control={control} render={({ field }) => <Input {...field} />} />
             </Form.Item>
@@ -204,15 +211,26 @@ const ProjectFormPage = () => {
               <Controller name="liveUrl" control={control} render={({ field }) => <Input {...field} />} />
             </Form.Item>
 
-            <Space>
-              <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                {isEdit ? "Save Changes" : "Create Project"}
-              </Button>
-              <Button onClick={() => navigate(ROUTES.ADMIN_PROJECTS)}>
-                Cancel
-              </Button>
-            </Space>
-          </Form>
+                    <Space>
+                      <Button type="primary" htmlType="submit" loading={isSubmitting}>
+                        {isEdit ? "Save Changes" : "Create Project"}
+                      </Button>
+                      <Button onClick={() => navigate(ROUTES.ADMIN_PROJECTS)}>
+                        Cancel
+                      </Button>
+                    </Space>
+                  </Form>
+                ),
+              },
+              ...(isEdit && idToken && id
+                ? [{
+                    key: "case-study",
+                    label: "Case Study",
+                    children: <CaseStudyForm idToken={idToken} projectId={id} />,
+                  }]
+                : []),
+            ]}
+          />
         </Card>
       </Space>
     </AdminLayout>

@@ -1,5 +1,6 @@
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./api";
 import type { Project, ProjectInput, ProjectPatch } from "../types/project";
+import type { CaseStudy, CaseStudyInput } from "../types/caseStudy";
 
 export async function listProjects(): Promise<Project[]> {
   return apiGet<Project[]>("/projects");
@@ -31,4 +32,17 @@ export async function deleteProject(id: string, token: string): Promise<void> {
 
 export async function patchProject(id: string, data: ProjectPatch, token: string): Promise<Project> {
   return apiPatch<Project>(`/projects/${id}`, data, token);
+}
+
+export async function getCaseStudy(projectId: string): Promise<CaseStudy | null> {
+  const data = await apiGet<CaseStudy | Record<string, never>>(`/projects/${projectId}/case-study`);
+  return Object.keys(data).length > 0 ? data as CaseStudy : null;
+}
+
+export async function upsertCaseStudy(
+  projectId: string,
+  data: CaseStudyInput,
+  token: string,
+): Promise<CaseStudy> {
+  return apiPut<CaseStudy>(`/projects/${projectId}/case-study`, data, token);
 }

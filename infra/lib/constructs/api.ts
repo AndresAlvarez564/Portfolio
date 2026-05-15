@@ -137,10 +137,10 @@ export class ApiConstruct extends Construct {
     const projectAdminByIdResource = projectByIdResource.addResource("admin");
     projectAdminByIdResource.addMethod("GET", integration("projects"), methodOptions(withAuth));
 
-    // GET /projects/{id}/case-study   (admin)
+    // GET /projects/{id}/case-study   (public)
     // PUT /projects/{id}/case-study   (admin)
     const caseStudyResource = projectByIdResource.addResource("case-study");
-    caseStudyResource.addMethod("GET", integration("projects"), methodOptions(withAuth));
+    caseStudyResource.addMethod("GET", integration("projects"), methodOptions());
     caseStudyResource.addMethod("PUT", integration("projects"), methodOptions(withAuth));
 
     // GET /experience

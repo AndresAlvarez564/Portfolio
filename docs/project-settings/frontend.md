@@ -300,8 +300,11 @@ The projects feature uses:
 | `front/src/pages/public/ProjectDetailPage.tsx` | Public project detail page at `/projects/:slug` |
 | `front/src/pages/admin/ProjectsListPage.tsx` | Admin project table with publish, feature, edit, and delete actions |
 | `front/src/pages/admin/ProjectFormPage.tsx` | Shared create/edit form for `/admin/projects/create` and `/admin/projects/:id/edit` |
+| `front/src/components/admin/CaseStudyForm.tsx` | Case study editor shown as a second tab when editing an existing project |
 
 Admin project routes are wrapped in `ProtectedRoute`; backend authorization still enforces the `admin` group for all admin calls.
+
+`ProjectDetailPage` fetches the case study after loading the project by slug and renders the case study section only when data exists.
 
 ### Layout components
 
