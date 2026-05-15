@@ -4,6 +4,7 @@ import os
 import re
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -53,9 +54,19 @@ def _gsi2sk(featured, featured_order):
     return f"FEATURED#{str(bool(featured)).lower()}#{order:03d}"
 
 
+def _to_json_value(value):
+    if isinstance(value, Decimal):
+        return int(value) if value % 1 == 0 else float(value)
+    if isinstance(value, list):
+        return [_to_json_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _to_json_value(item) for key, item in value.items()}
+    return value
+
+
 def _public_project(item):
     return {
-        k: v for k, v in item.items()
+        k: _to_json_value(v) for k, v in item.items()
         if k not in {"pk", "sk", "gsi1pk", "gsi1sk", "gsi2pk", "gsi2sk", "gsi3pk", "gsi3sk"}
     }
 
