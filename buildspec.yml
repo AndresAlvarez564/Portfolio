@@ -8,10 +8,11 @@ version: 0.2
 #   1. Install dependencies
 #   2. Run Lambda unit tests  ← blocks deploy on failure
 #   3. Run frontend tests     ← blocks deploy on failure
-#   4. Build frontend
-#   5. CDK synth + deploy portfolio-<DEPLOY_STAGE>-AppStack
-#   6. Upload frontend to S3
-#   7. Invalidate CloudFront cache
+#   4. CDK synth + deploy portfolio-<DEPLOY_STAGE>-AppStack
+#   5. Read stack outputs into Vite env vars
+#   6. Build frontend
+#   7. Upload frontend to S3
+#   8. Invalidate CloudFront cache
 
 phases:
   install:
@@ -33,12 +34,41 @@ phases:
 
   build:
     commands:
-      - echo "Building frontend..."
-      - cd front && npm run build && cd ..
       - echo "Synthesizing CDK app..."
       - cd infra && npm run build && npx cdk synth && cd ..
       - echo "Deploying portfolio-${DEPLOY_STAGE}-AppStack..."
       - cd infra && npx cdk deploy portfolio-${DEPLOY_STAGE}-AppStack --require-approval never && cd ..
+      - |
+        USER_POOL_ID=$(aws cloudformation describe-stacks \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-user-pool-id'].OutputValue" \
+          --output text)
+        USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-user-pool-client-id'].OutputValue" \
+          --output text)
+        API_URL=$(aws cloudformation describe-stacks \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-api-url'].OutputValue" \
+          --output text)
+        MEDIA_URL=$(aws cloudformation describe-stacks \
+          --stack-name portfolio-${DEPLOY_STAGE}-AppStack \
+          --query "Stacks[0].Outputs[?ExportName=='portfolio-${DEPLOY_STAGE}-media-url'].OutputValue" \
+          --output text)
+
+        if [ -z "$USER_POOL_ID" ] || [ -z "$USER_POOL_CLIENT_ID" ] || [ -z "$API_URL" ] || [ -z "$MEDIA_URL" ]; then
+          echo "Missing required frontend configuration from CloudFormation outputs."
+          exit 1
+        fi
+
+        printf "VITE_USER_POOL_ID=%s\nVITE_USER_POOL_CLIENT_ID=%s\nVITE_API_URL=%s\nVITE_MEDIA_URL=%s\n" \
+          "$USER_POOL_ID" \
+          "$USER_POOL_CLIENT_ID" \
+          "$API_URL" \
+          "$MEDIA_URL" \
+          > front/.env.production
+      - echo "Building frontend..."
+      - cd front && npm run build && cd ..
 
   post_build:
     commands:
