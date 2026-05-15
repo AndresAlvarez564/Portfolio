@@ -288,6 +288,21 @@ const { isAuthenticated, isAdmin, signOut, idToken } = useAuthContext();
 
 If a file exceeds these limits, split it into smaller focused units.
 
+### Projects pages
+
+The projects feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/projectsService.ts` | Typed API client for public and admin project endpoints |
+| `front/src/types/project.ts` | `Project`, `ProjectInput`, and patch types |
+| `front/src/pages/public/ProjectsPage.tsx` | Public project card grid with loading and empty states |
+| `front/src/pages/public/ProjectDetailPage.tsx` | Public project detail page at `/projects/:slug` |
+| `front/src/pages/admin/ProjectsListPage.tsx` | Admin project table with publish, feature, edit, and delete actions |
+| `front/src/pages/admin/ProjectFormPage.tsx` | Shared create/edit form for `/admin/projects/create` and `/admin/projects/:id/edit` |
+
+Admin project routes are wrapped in `ProtectedRoute`; backend authorization still enforces the `admin` group for all admin calls.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

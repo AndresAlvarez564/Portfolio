@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { App, Avatar, Button, Layout, Menu, Space, Typography } from "antd";
 import {
   DashboardOutlined,
+  FolderOpenOutlined,
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
@@ -25,6 +26,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const { message } = App.useApp();
   const [signingOut, setSigningOut] = useState(false);
+  const selectedKey = location.pathname.startsWith(ROUTES.ADMIN_PROJECTS)
+    ? ROUTES.ADMIN_PROJECTS
+    : location.pathname;
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -48,13 +52,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
         <Menu
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[selectedKey]}
           onClick={({ key }) => navigate(key)}
           items={[
             {
               key: ROUTES.ADMIN_DASHBOARD,
               icon: <DashboardOutlined />,
               label: "Dashboard",
+            },
+            {
+              key: ROUTES.ADMIN_PROJECTS,
+              icon: <FolderOpenOutlined />,
+              label: "Projects",
             },
             {
               key: ROUTES.ADMIN_SETTINGS,

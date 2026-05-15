@@ -265,6 +265,36 @@ Business logic will be implemented in Phase 2 feature tickets. Key rules to enfo
 
 ---
 
+## Projects Module
+
+`lambdas/projects/routes/projects.py` implements project CRUD against DynamoDB `PROJECT` items.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `GET` | `/projects` | Public | Queries `gsi1` for `STATUS#published#` and returns published projects only |
+| `GET` | `/projects/{slug}` | Public | Queries `gsi3` by `SLUG#<slug>` and returns `404` for drafts or missing projects |
+| `GET` | `/projects/admin` | Admin | Queries `gsi1` for all project statuses |
+| `GET` | `/projects/{id}/admin` | Admin | Gets `PROJECT#<id> / METADATA` |
+| `POST` | `/projects` | Admin | Validates input, generates `projectId` and unique slug, writes project item |
+| `PUT` | `/projects/{id}` | Admin | Replaces editable metadata and refreshes GSI keys |
+| `DELETE` | `/projects/{id}` | Admin | Deletes the project metadata item |
+| `PATCH` | `/projects/{id}` | Admin | Updates `status`, `featured`, or `featuredOrder` |
+
+Slug uniqueness is enforced in Lambda by querying `gsi3`. Conflicts append `-2`, `-3`, and so on while keeping the slug within 80 characters.
+
+GSI key update pattern:
+
+| Field changed | Key updated |
+|---|---|
+| `status` | `gsi1sk = STATUS#<status>#<createdAt>` |
+| `featured` / `featuredOrder` | `gsi2sk = FEATURED#<true|false>#<order>` |
+
+Project mutations log structured events for create, delete, and patch operations.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented
