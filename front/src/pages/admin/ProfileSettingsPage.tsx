@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Form, Input, Button, App } from "antd";
+import { App, Button, Card, Form, Input, Space, Typography } from "antd";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -72,9 +72,18 @@ const ProfileSettingsPage = () => {
 
   return (
     <AdminLayout>
-      <div style={{ maxWidth: 600 }}>
-        <h2>Profile Settings</h2>
-        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Space direction="vertical" size="large" style={{ maxWidth: 720, width: "100%" }}>
+        <div>
+          <Typography.Title level={2} style={{ marginBottom: 0 }}>
+            Profile Settings
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            Edit the public About page profile information.
+          </Typography.Text>
+        </div>
+
+        <Card>
+          <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
 
           <Form.Item label="Name" validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
             <Controller name="name" control={control} render={({ field }) => <Input {...field} />} />
@@ -108,14 +117,15 @@ const ProfileSettingsPage = () => {
             <Controller name="website" control={control} render={({ field }) => <Input {...field} placeholder="https://yourwebsite.com" />} />
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={isSubmitting}>
-              Save Changes
-            </Button>
-          </Form.Item>
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+                Save Changes
+              </Button>
+            </Form.Item>
 
-        </Form>
-      </div>
+          </Form>
+        </Card>
+      </Space>
     </AdminLayout>
   );
 };

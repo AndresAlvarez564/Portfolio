@@ -2,13 +2,18 @@
 // Provides a top navigation bar with the user's email and a logout button.
 
 import { type ReactNode, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Layout, Button, Space, Typography, App } from "antd";
-import { LogoutOutlined, SettingOutlined } from "@ant-design/icons";
+import { useLocation, useNavigate } from "react-router-dom";
+import { App, Avatar, Button, Layout, Menu, Space, Typography } from "antd";
+import {
+  DashboardOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuthContext } from "../context/AuthContext";
 import { ROUTES } from "../constants";
 
-const { Header, Content } = Layout;
+const { Header, Content, Sider } = Layout;
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -17,6 +22,7 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { email, signOut } = useAuthContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const { message } = App.useApp();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -33,13 +39,46 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between px-6 bg-white border-b border-gray-200">
-        <Typography.Text strong>Portfolio Admin</Typography.Text>
-        <Space>
-          <Link to={ROUTES.ADMIN_SETTINGS}><SettingOutlined /> Settings</Link>
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider breakpoint="lg" collapsedWidth="0" theme="light">
+        <div style={{ padding: 20 }}>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            Portfolio Admin
+          </Typography.Title>
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          onClick={({ key }) => navigate(key)}
+          items={[
+            {
+              key: ROUTES.ADMIN_DASHBOARD,
+              icon: <DashboardOutlined />,
+              label: "Dashboard",
+            },
+            {
+              key: ROUTES.ADMIN_SETTINGS,
+              icon: <SettingOutlined />,
+              label: "Settings",
+            },
+          ]}
+        />
+      </Sider>
+      <Layout>
+        <Header
+          style={{
+            alignItems: "center",
+            background: "#fff",
+            borderBottom: "1px solid #f0f0f0",
+            display: "flex",
+            justifyContent: "flex-end",
+            paddingInline: 24,
+          }}
+        >
+          <Space size="middle">
+            <Avatar icon={<UserOutlined />} />
           {email && (
-            <Typography.Text type="secondary" className="text-sm">
+            <Typography.Text type="secondary">
               {email}
             </Typography.Text>
           )}
@@ -53,7 +92,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </Button>
         </Space>
       </Header>
-      <Content className="p-6">{children}</Content>
+        <Content style={{ padding: 24 }}>{children}</Content>
+      </Layout>
     </Layout>
   );
 };
