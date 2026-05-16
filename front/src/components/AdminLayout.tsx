@@ -10,6 +10,7 @@ import {
   FolderOpenOutlined,
   LogoutOutlined,
   SettingOutlined,
+  ToolOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuthContext } from "../context/AuthContext";
@@ -31,6 +32,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     ? ROUTES.ADMIN_PROJECTS
     : location.pathname.startsWith(ROUTES.ADMIN_EXPERIENCE)
       ? ROUTES.ADMIN_EXPERIENCE
+      : location.pathname.startsWith(ROUTES.ADMIN_SKILLS)
+        ? ROUTES.ADMIN_SKILLS
     : location.pathname;
 
   const handleSignOut = async () => {
@@ -72,6 +75,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               key: ROUTES.ADMIN_EXPERIENCE,
               icon: <HistoryOutlined />,
               label: "Experience",
+            },
+            {
+              key: ROUTES.ADMIN_SKILLS,
+              icon: <ToolOutlined />,
+              label: "Skills",
             },
             {
               key: ROUTES.ADMIN_SETTINGS,

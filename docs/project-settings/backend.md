@@ -20,7 +20,7 @@ All Lambda functions are deployed via CodeDeploy using the `live` alias. API Gat
 | `portfolio-<stage>-profile` | Profile settings | `GET /profile`, `PUT /profile` |
 | `portfolio-<stage>-projects` | Projects and case studies | `GET/POST /projects`, `GET/PUT/DELETE/PATCH /projects/{slug}`, `GET /projects/admin`, `GET /projects/{id}/admin`, `GET/PUT /projects/{id}/case-study` |
 | `portfolio-<stage>-experience` | Experience entries | `GET/POST /experience`, `PATCH /experience/reorder`, `PUT/DELETE /experience/{id}` |
-| `portfolio-<stage>-skills` | Skills | `GET/POST /skills`, `PUT/DELETE /skills/{id}` |
+| `portfolio-<stage>-skills` | Skills | `GET/POST /skills`, `GET /skills/admin`, `PUT/DELETE /skills/{id}` |
 | `portfolio-<stage>-certifications` | Certifications | `GET/POST /certifications`, `PUT/DELETE /certifications/{id}` |
 | `portfolio-<stage>-media` | Media uploads | `GET /media`, `POST /media/upload`, `POST /media/confirm`, `DELETE /media/{id}` |
 | `portfolio-<stage>-contact` | Contact messages | `POST /contact`, `GET /contact`, `GET/PATCH /contact/{id}` |
@@ -314,6 +314,26 @@ Routes:
 | `PATCH` | `/experience/reorder` | Admin | Receives `orderedIds` and updates `order` plus `gsi1sk` |
 
 Reorder stores display order as a 1-based number and `gsi1sk = ORDER#<padded>`, for example `ORDER#001`.
+
+---
+
+## Skills Module
+
+`lambdas/skills/routes/skills.py` implements skills CRUD against DynamoDB `SKILL` items.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `GET` | `/skills` | Public | Queries `gsi1pk = SKILL` with `gsi1sk` beginning `VISIBILITY#visible` |
+| `GET` | `/skills/admin` | Admin | Queries all skills, including hidden entries |
+| `POST` | `/skills` | Admin | Validates input, generates `skillId`, creates a skill |
+| `PUT` | `/skills/{id}` | Admin | Replaces editable fields and refreshes `gsi1sk` |
+| `DELETE` | `/skills/{id}` | Admin | Deletes the skill metadata item |
+
+Required fields are `name`, `category`, and `visibility`. Allowed categories are `cloud`, `backend`, `frontend`, `devops`, and `databases`; allowed visibility values are `visible` and `hidden`.
+
+Skills use `gsi1pk = SKILL` and `gsi1sk = VISIBILITY#<visibility>#<category>`. The public route enforces the visibility filter in Lambda so hidden entries are never returned to public visitors.
 
 ---
 

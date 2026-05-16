@@ -320,6 +320,20 @@ The experience feature uses:
 
 The admin reorder UI uses native HTML drag-and-drop and persists the full ordered ID list to `PATCH /experience/reorder`.
 
+### Skills pages
+
+The skills feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/skillsService.ts` | Typed API client for public list, admin list, and admin mutations |
+| `front/src/types/skill.ts` | `Skill`, `SkillInput`, category, and visibility types |
+| `front/src/pages/public/SkillsPage.tsx` | Public grouped skill tags by category |
+| `front/src/pages/admin/SkillsPage.tsx` | Admin table with create, edit, delete, visibility, and order fields |
+| `front/src/components/admin/SkillForm.tsx` | Shared add/edit form with category and visibility selects |
+
+The public page groups the list by the fixed category order: cloud, backend, frontend, devops, and databases. The backend filters hidden skills before the frontend receives data.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

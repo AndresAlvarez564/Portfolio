@@ -165,6 +165,10 @@ export class ApiConstruct extends Construct {
     skillsResource.addMethod("GET", integration("skills"), methodOptions());
     skillsResource.addMethod("POST", integration("skills"), methodOptions(withAuth));
 
+    // GET /skills/admin  (admin) - must be before {id}
+    const skillsAdminResource = skillsResource.addResource("admin");
+    skillsAdminResource.addMethod("GET", integration("skills"), methodOptions(withAuth));
+
     // PUT /skills/{id}     (admin)
     // DELETE /skills/{id}  (admin)
     const skillByIdResource = skillsResource.addResource("{id}");
