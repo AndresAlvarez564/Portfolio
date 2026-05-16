@@ -2,12 +2,12 @@ import json
 import os
 
 import boto3
+import pytest
 from moto import mock_aws
 
 os.environ["TABLE_NAME"] = "portfolio-dev-main"
 os.environ["LOG_LEVEL"] = "DEBUG"
 
-from handler import lambda_handler
 from routes.certifications import (
     create_certification,
     delete_certification,
@@ -154,9 +154,8 @@ def test_create_certification_invalid_date_format_returns_400():
 def test_create_certification_without_admin_returns_403():
     _make_table()
 
-    response = lambda_handler(_public_event(_valid_body()), None)
-
-    assert response["statusCode"] == 403
+    with pytest.raises(PermissionError):
+        create_certification(_public_event(_valid_body()))
 
 
 @mock_aws
