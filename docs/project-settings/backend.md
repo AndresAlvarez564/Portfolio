@@ -356,6 +356,27 @@ Certifications use `gsi1pk = CERTIFICATION` and `gsi1sk = ISSUE_DATE#<issueDate>
 
 ---
 
+## Contact Module
+
+`lambdas/contact/routes/contact.py` implements contact form submission and admin message management.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `POST` | `/contact` | Public | Validates honeypot and form fields, stores a message, sends an SQS notification |
+| `GET` | `/contact` | Admin | Lists messages sorted newest first; supports `?status=unread|read|archived` |
+| `GET` | `/contact/{id}` | Admin | Gets one contact message |
+| `PATCH` | `/contact/{id}` | Admin | Updates message status and refreshes `gsi1sk` |
+
+The public submit route silently returns `200` when the honeypot field (`website` or `honeypot`) is filled. Required fields are `name`, `email`, `subject`, and `message`; `message` is limited to 2000 characters.
+
+Contact messages use `gsi1pk = CONTACT` and `gsi1sk = CREATED#<createdAt>#STATUS#<status>#MESSAGE#<id>`. Status values are `unread`, `read`, and `archived`.
+
+The contact Lambda receives `CONTACT_QUEUE_URL` and sends the saved message to SQS for the async email worker.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented

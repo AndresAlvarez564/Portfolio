@@ -12,6 +12,7 @@ import ExperiencePage from "./pages/public/ExperiencePage";
 import SkillsPage from "./pages/public/SkillsPage";
 import CertificationsPage from "./pages/public/CertificationsPage";
 import AboutPage from "./pages/public/AboutPage";
+import ContactPage from "./pages/public/ContactPage";
 import NotFoundPage from "./pages/public/NotFoundPage";
 
 // Admin pages
@@ -23,6 +24,7 @@ import ProjectFormPage from "./pages/admin/ProjectFormPage";
 import AdminExperiencePage from "./pages/admin/ExperiencePage";
 import AdminSkillsPage from "./pages/admin/SkillsPage";
 import AdminCertificationsPage from "./pages/admin/CertificationsPage";
+import MessagesPage from "./pages/admin/MessagesPage";
 
 const App = () => {
   return (
@@ -38,6 +40,7 @@ const App = () => {
           <Route path={ROUTES.SKILLS} element={<SkillsPage />} />
           <Route path={ROUTES.CERTIFICATIONS} element={<CertificationsPage />} />
           <Route path={ROUTES.ABOUT} element={<AboutPage />} />
+          <Route path={ROUTES.CONTACT} element={<ContactPage />} />
 
           {/* Admin routes — protected */}
           <Route path="/admin" element={<Navigate to={ROUTES.ADMIN_LOGIN} replace />} />
@@ -103,6 +106,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <AdminCertificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_MESSAGES}
+            element={
+              <ProtectedRoute>
+                <MessagesPage />
               </ProtectedRoute>
             }
           />

@@ -349,6 +349,20 @@ The certifications feature uses:
 
 Badge upload follows the media flow: request a signed upload URL, upload the image directly to S3, confirm the media record, then save `badgeUrl` and `badgeS3Key` on the certification.
 
+### Contact pages
+
+The contact feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/contactService.ts` | Typed API client for public submit and admin message management |
+| `front/src/types/contact.ts` | Contact form, message, and status types |
+| `front/src/pages/public/ContactPage.tsx` | Public validated contact form with success and error states |
+| `front/src/pages/admin/MessagesPage.tsx` | Admin message table with status filters and unread count |
+| `front/src/components/admin/MessageDetailModal.tsx` | Full message view and status actions |
+
+The public form includes a visually hidden `website` honeypot field. Humans leave it empty; bots that fill it are handled silently by the backend.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

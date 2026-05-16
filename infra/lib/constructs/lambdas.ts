@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
@@ -13,6 +14,7 @@ interface LambdasConstructProps {
   config: EnvironmentConfig;
   table: dynamodb.Table;
   mediaBucket: s3.Bucket;
+  contactQueue?: sqs.Queue;
 }
 
 // Business domains — each maps to a Lambda function and a lambdas/<domain>/ folder
@@ -39,7 +41,7 @@ export class LambdasConstruct extends Construct {
   constructor(scope: Construct, id: string, props: LambdasConstructProps) {
     super(scope, id);
 
-    const { config, table, mediaBucket } = props;
+    const { config, table, mediaBucket, contactQueue } = props;
 
     const logRetention = config.stage === "prod"
       ? logs.RetentionDays.ONE_YEAR
@@ -52,7 +54,7 @@ export class LambdasConstruct extends Construct {
 
     for (const domain of DOMAINS) {
       const { fn, alias } = this.createDomainFunction(
-        domain, config, table, mediaBucket, logRetention, deploymentConfig,
+        domain, config, table, mediaBucket, contactQueue, logRetention, deploymentConfig,
       );
       this.functions[domain] = fn;
       this.aliases[domain] = alias;
@@ -64,6 +66,7 @@ export class LambdasConstruct extends Construct {
     config: EnvironmentConfig,
     table: dynamodb.Table,
     mediaBucket: s3.Bucket,
+    contactQueue: sqs.Queue | undefined,
     logRetention: logs.RetentionDays,
     deploymentConfig: codedeploy.ILambdaDeploymentConfig,
   ): { fn: lambda.Function; alias: lambda.Alias } {
@@ -77,6 +80,9 @@ export class LambdasConstruct extends Construct {
 
     if (domain === "media") {
       environment["MEDIA_BUCKET_NAME"] = mediaBucket.bucketName;
+    }
+    if (domain === "contact" && contactQueue) {
+      environment["CONTACT_QUEUE_URL"] = contactQueue.queueUrl;
     }
 
     // --- Lambda function ---
@@ -97,6 +103,9 @@ export class LambdasConstruct extends Construct {
     table.grantReadWriteData(fn);
     if (domain === "media") {
       mediaBucket.grantReadWrite(fn);
+    }
+    if (domain === "contact" && contactQueue) {
+      contactQueue.grantSendMessages(fn);
     }
 
     // --- Lambda version (immutable snapshot used by CodeDeploy) ---

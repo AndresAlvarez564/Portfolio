@@ -1,21 +1,23 @@
 // AdminLayout — shared layout for all protected admin pages.
 // Provides a top navigation bar with the user's email and a logout button.
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { App, Avatar, Button, Layout, Menu, Space, Typography } from "antd";
+import { App, Avatar, Badge, Button, Layout, Menu, Space, Typography } from "antd";
 import {
   AuditOutlined,
   DashboardOutlined,
   HistoryOutlined,
   FolderOpenOutlined,
   LogoutOutlined,
+  MailOutlined,
   SettingOutlined,
   ToolOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuthContext } from "../context/AuthContext";
 import { ROUTES } from "../constants";
+import { listMessages } from "../services/contactService";
 
 const { Header, Content, Sider } = Layout;
 
@@ -24,11 +26,12 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { email, signOut } = useAuthContext();
+  const { email, idToken, signOut } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
   const { message } = App.useApp();
   const [signingOut, setSigningOut] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const selectedKey = location.pathname.startsWith(ROUTES.ADMIN_PROJECTS)
     ? ROUTES.ADMIN_PROJECTS
     : location.pathname.startsWith(ROUTES.ADMIN_EXPERIENCE)
@@ -37,7 +40,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         ? ROUTES.ADMIN_SKILLS
         : location.pathname.startsWith(ROUTES.ADMIN_CERTIFICATIONS)
           ? ROUTES.ADMIN_CERTIFICATIONS
+          : location.pathname.startsWith(ROUTES.ADMIN_MESSAGES)
+            ? ROUTES.ADMIN_MESSAGES
     : location.pathname;
+
+  useEffect(() => {
+    if (!idToken) return;
+    listMessages(idToken, "unread")
+      .then((messages) => setUnreadCount(messages.length))
+      .catch(() => setUnreadCount(0));
+  }, [idToken]);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -88,6 +100,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               key: ROUTES.ADMIN_CERTIFICATIONS,
               icon: <AuditOutlined />,
               label: "Certifications",
+            },
+            {
+              key: ROUTES.ADMIN_MESSAGES,
+              icon: <MailOutlined />,
+              label: (
+                <Badge count={unreadCount} size="small" offset={[8, 0]}>
+                  Messages
+                </Badge>
+              ),
             },
             {
               key: ROUTES.ADMIN_SETTINGS,
