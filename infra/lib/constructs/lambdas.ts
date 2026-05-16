@@ -14,6 +14,7 @@ interface LambdasConstructProps {
   config: EnvironmentConfig;
   table: dynamodb.Table;
   mediaBucket: s3.Bucket;
+  mediaUrl?: string;
   contactQueue?: sqs.Queue;
 }
 
@@ -41,7 +42,7 @@ export class LambdasConstruct extends Construct {
   constructor(scope: Construct, id: string, props: LambdasConstructProps) {
     super(scope, id);
 
-    const { config, table, mediaBucket, contactQueue } = props;
+    const { config, table, mediaBucket, mediaUrl, contactQueue } = props;
 
     const logRetention = config.stage === "prod"
       ? logs.RetentionDays.ONE_YEAR
@@ -54,7 +55,7 @@ export class LambdasConstruct extends Construct {
 
     for (const domain of DOMAINS) {
       const { fn, alias } = this.createDomainFunction(
-        domain, config, table, mediaBucket, contactQueue, logRetention, deploymentConfig,
+        domain, config, table, mediaBucket, mediaUrl, contactQueue, logRetention, deploymentConfig,
       );
       this.functions[domain] = fn;
       this.aliases[domain] = alias;
@@ -66,6 +67,7 @@ export class LambdasConstruct extends Construct {
     config: EnvironmentConfig,
     table: dynamodb.Table,
     mediaBucket: s3.Bucket,
+    mediaUrl: string | undefined,
     contactQueue: sqs.Queue | undefined,
     logRetention: logs.RetentionDays,
     deploymentConfig: codedeploy.ILambdaDeploymentConfig,
@@ -80,6 +82,9 @@ export class LambdasConstruct extends Construct {
 
     if (domain === "media") {
       environment["MEDIA_BUCKET_NAME"] = mediaBucket.bucketName;
+      if (mediaUrl) {
+        environment["CLOUDFRONT_MEDIA_URL"] = mediaUrl;
+      }
     }
     if (domain === "contact" && contactQueue) {
       environment["CONTACT_QUEUE_URL"] = contactQueue.queueUrl;

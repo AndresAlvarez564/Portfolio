@@ -152,7 +152,6 @@ const AdminCertificationsPage = () => {
         destroyOnHidden
       >
         <CertificationForm
-          idToken={idToken}
           initialValue={editing}
           onCancel={() => setModalOpen(false)}
           onSubmit={saveItem}

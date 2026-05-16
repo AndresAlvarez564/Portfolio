@@ -11,6 +11,7 @@ import {
   FolderOpenOutlined,
   LogoutOutlined,
   MailOutlined,
+  PictureOutlined,
   SettingOutlined,
   ToolOutlined,
   UserOutlined,
@@ -42,6 +43,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           ? ROUTES.ADMIN_CERTIFICATIONS
           : location.pathname.startsWith(ROUTES.ADMIN_MESSAGES)
             ? ROUTES.ADMIN_MESSAGES
+            : location.pathname.startsWith(ROUTES.ADMIN_MEDIA)
+              ? ROUTES.ADMIN_MEDIA
     : location.pathname;
 
   useEffect(() => {
@@ -109,6 +112,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   Messages
                 </Badge>
               ),
+            },
+            {
+              key: ROUTES.ADMIN_MEDIA,
+              icon: <PictureOutlined />,
+              label: "Media",
             },
             {
               key: ROUTES.ADMIN_SETTINGS,

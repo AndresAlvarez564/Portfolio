@@ -28,6 +28,7 @@ export class AppStack extends cdk.Stack {
       config,
       table: database.table,
       mediaBucket: hosting.mediaBucket,
+      mediaUrl: `https://${hosting.mediaDistribution.distributionDomainName}`,
       contactQueue: asyncProcessing.contactQueue,
     });
     const api = new ApiConstruct(this, "Api", {

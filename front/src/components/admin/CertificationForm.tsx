@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
-import { Alert, Button, Form, Image, Input, Space, Upload } from "antd";
-import type { UploadProps } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
+import { Button, Form, Input, Space } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { uploadMediaFile } from "../../services/mediaService";
+import MediaUpload from "../MediaUpload";
 import type { Certification, CertificationInput } from "../../types/certification";
 
 const datePattern = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -37,14 +35,12 @@ const defaultValues: FormValues = {
 };
 
 interface CertificationFormProps {
-  idToken: string | null;
   initialValue?: Certification | null;
   onCancel: () => void;
   onSubmit: (value: CertificationInput) => Promise<void>;
 }
 
-const CertificationForm = ({ idToken, initialValue, onCancel, onSubmit }: CertificationFormProps) => {
-  const [uploadError, setUploadError] = useState<string | null>(null);
+const CertificationForm = ({ initialValue, onCancel, onSubmit }: CertificationFormProps) => {
   const {
     control,
     handleSubmit,
@@ -69,7 +65,6 @@ const CertificationForm = ({ idToken, initialValue, onCancel, onSubmit }: Certif
       badgeUrl: initialValue.badgeUrl ?? "",
       badgeS3Key: initialValue.badgeS3Key ?? "",
     } : defaultValues);
-    setUploadError(null);
   }, [initialValue, reset]);
 
   const submit = async (values: FormValues) => {
@@ -82,25 +77,6 @@ const CertificationForm = ({ idToken, initialValue, onCancel, onSubmit }: Certif
       badgeUrl: values.badgeUrl,
       badgeS3Key: values.badgeS3Key,
     });
-  };
-
-  const uploadBadge: UploadProps["customRequest"] = async (options) => {
-    if (!idToken || !(options.file instanceof File)) {
-      setUploadError("Sign in again before uploading a badge.");
-      options.onError?.(new Error("Missing upload token."));
-      return;
-    }
-
-    setUploadError(null);
-    try {
-      const media = await uploadMediaFile(options.file, idToken);
-      setValue("badgeUrl", media.cloudfrontUrl ?? media.url ?? "", { shouldValidate: true });
-      setValue("badgeS3Key", media.s3Key, { shouldValidate: true });
-      options.onSuccess?.(media);
-    } catch (error) {
-      setUploadError("Badge upload failed. You can still paste a badge URL manually.");
-      options.onError?.(error as Error);
-    }
   };
 
   return (
@@ -128,13 +104,17 @@ const CertificationForm = ({ idToken, initialValue, onCancel, onSubmit }: Certif
       </Form.Item>
 
       <Form.Item label="Badge Image">
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          {badgeUrl && <Image src={badgeUrl} alt="Certification badge preview" width={96} height={96} style={{ objectFit: "contain" }} />}
-          <Upload customRequest={uploadBadge} maxCount={1} accept="image/*" showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Upload Badge</Button>
-          </Upload>
-          {uploadError && <Alert type="warning" message={uploadError} showIcon />}
-        </Space>
+        <MediaUpload
+          context="certification-badge"
+          mediaType="certification-badge"
+          currentUrl={badgeUrl}
+          accept="image/*"
+          label="Upload Badge"
+          onUploadComplete={(media) => {
+            setValue("badgeUrl", media.cloudfrontUrl, { shouldValidate: true });
+            setValue("badgeS3Key", media.s3Key, { shouldValidate: true });
+          }}
+        />
       </Form.Item>
 
       <Form.Item label="Badge URL" validateStatus={errors.badgeUrl ? "error" : ""} help={errors.badgeUrl?.message}>

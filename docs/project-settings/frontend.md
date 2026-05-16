@@ -363,6 +363,19 @@ The contact feature uses:
 
 The public form includes a visually hidden `website` honeypot field. Humans leave it empty; bots that fill it are handled silently by the backend.
 
+### Media upload
+
+The media feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/mediaService.ts` | Upload URL, S3 PUT, confirm, list, and delete API helpers |
+| `front/src/types/media.ts` | Media record, upload context, and request/confirm types |
+| `front/src/components/MediaUpload.tsx` | Reusable upload control for badges, thumbnails, screenshots, diagrams, and CVs |
+| `front/src/pages/admin/MediaLibraryPage.tsx` | Admin media grid with context filter, copy URL, and delete actions |
+
+`MediaUpload` performs the full upload flow: request a signed URL, upload the selected file directly to S3 with `PUT`, confirm the upload with the API, then calls `onUploadComplete(media)` so the parent form can save `cloudfrontUrl` and `s3Key`.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

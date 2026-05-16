@@ -25,6 +25,7 @@ import AdminExperiencePage from "./pages/admin/ExperiencePage";
 import AdminSkillsPage from "./pages/admin/SkillsPage";
 import AdminCertificationsPage from "./pages/admin/CertificationsPage";
 import MessagesPage from "./pages/admin/MessagesPage";
+import MediaLibraryPage from "./pages/admin/MediaLibraryPage";
 
 const App = () => {
   return (
@@ -114,6 +115,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <MessagesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_MEDIA}
+            element={
+              <ProtectedRoute>
+                <MediaLibraryPage />
               </ProtectedRoute>
             }
           />

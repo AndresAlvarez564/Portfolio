@@ -377,6 +377,27 @@ The contact Lambda receives `CONTACT_QUEUE_URL` and sends the saved message to S
 
 ---
 
+## Media Module
+
+`lambdas/media/routes/media.py` implements direct browser uploads to the private media S3 bucket using pre-signed PUT URLs.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `POST` | `/media/upload` | Admin | Validates file metadata and returns a 5-minute pre-signed S3 PUT URL |
+| `POST` | `/media/confirm` | Admin | Verifies the S3 object exists, saves a media record, returns `cloudfrontUrl` |
+| `GET` | `/media` | Admin | Lists all media records newest first |
+| `DELETE` | `/media/{id}` | Admin | Deletes the S3 object and DynamoDB media record |
+
+Allowed content types are `image/jpeg`, `image/png`, `image/webp`, `image/svg+xml`, and `application/pdf`. Allowed contexts are `project-screenshot`, `project-thumbnail`, `certification-badge`, `cv`, and `diagram`.
+
+Media records use `gsi1pk = MEDIA` and `gsi1sk = CREATED#<createdAt>#CONTEXT#<context>#MEDIA#<id>`. The media Lambda receives `MEDIA_BUCKET_NAME` and `CLOUDFRONT_MEDIA_URL`; public URLs are constructed as `<CLOUDFRONT_MEDIA_URL>/<s3Key>`.
+
+When `context = cv`, confirm upload also updates `PROFILE / SETTINGS` with `cvFileUrl` and `cvS3Key`. Old CV objects are not deleted during replacement.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented

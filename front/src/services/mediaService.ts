@@ -1,48 +1,65 @@
-import { apiPost } from "./api";
+import { apiDelete, apiGet, apiPost } from "./api";
+import type {
+  ConfirmUploadInput,
+  MediaRecord,
+  MediaUploadContext,
+  RequestUploadInput,
+  RequestUploadResponse,
+} from "../types/media";
 
-interface UploadRequest {
-  filename: string;
-  contentType: string;
-  context: string;
+export async function requestUploadUrl(
+  data: RequestUploadInput,
+  token: string,
+): Promise<RequestUploadResponse> {
+  return apiPost<RequestUploadResponse>("/media/upload", data, token);
 }
 
-interface UploadResponse {
-  uploadUrl: string;
-  s3Key: string;
+export async function confirmUpload(data: ConfirmUploadInput, token: string): Promise<MediaRecord> {
+  return apiPost<MediaRecord>("/media/confirm", data, token);
 }
 
-interface ConfirmUploadRequest {
-  s3Key: string;
-  mediaType: string;
-  relatedId?: string;
+export async function listMedia(token: string): Promise<MediaRecord[]> {
+  return apiGet<MediaRecord[]>("/media", token);
 }
 
-interface MediaRecord {
-  mediaId?: string;
-  cloudfrontUrl?: string;
-  url?: string;
-  s3Key: string;
+export async function deleteMedia(id: string, token: string): Promise<void> {
+  return apiDelete(`/media/${id}`, token);
 }
 
-export async function uploadMediaFile(file: File, token: string): Promise<MediaRecord> {
-  const upload = await apiPost<UploadResponse>("/media/upload", {
-    filename: file.name,
-    contentType: file.type,
-    context: "certification-badge",
-  } satisfies UploadRequest, token);
-
-  const res = await fetch(upload.uploadUrl, {
+export async function uploadFileToS3(uploadUrl: string, file: File): Promise<void> {
+  const res = await fetch(uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": file.type },
     body: file,
   });
 
   if (!res.ok) {
-    throw new Error("Badge upload failed.");
+    throw new Error("Upload failed.");
   }
+}
 
-  return apiPost<MediaRecord>("/media/confirm", {
+export async function uploadMediaFile(
+  file: File,
+  token: string,
+  context: MediaUploadContext,
+  mediaType: string = context,
+  relatedId?: string,
+): Promise<MediaRecord> {
+  const upload = await requestUploadUrl({
+    filename: file.name,
+    contentType: file.type,
+    context,
+  }, token);
+
+  await uploadFileToS3(upload.uploadUrl, file);
+
+  return confirmUpload({
     s3Key: upload.s3Key,
-    mediaType: "certification-badge",
-  } satisfies ConfirmUploadRequest, token);
+    mediaType,
+    context,
+    relatedId,
+    filename: file.name,
+    contentType: file.type,
+    sizeBytes: file.size,
+  }, token);
 }
