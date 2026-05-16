@@ -350,6 +350,12 @@ entityType = CONTACT_MESSAGE
 - **Performance:** API responds immediately without waiting for SES
 - **Scalability:** Queue buffers messages during traffic spikes
 
+**Implementation status:**
+- Contact submissions are saved in DynamoDB before queueing.
+- `portfolio-<stage>-contact-queue` triggers `portfolio-<stage>-email-worker`.
+- The email worker sends SES notifications using `SES_FROM_EMAIL` and `SES_TO_EMAIL`.
+- `portfolio-<stage>-contact-dlq` receives messages after three failed processing attempts and has a CloudWatch depth alarm.
+
 **Flow:**
 ```text
 API Lambda → SQS Queue → Email Worker Lambda → SES

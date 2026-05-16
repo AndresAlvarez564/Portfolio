@@ -9,4 +9,6 @@ export const prodConfig: EnvironmentConfig = {
   enableWaf: false,
   lambdaMemory: 512,
   lambdaTimeoutSeconds: 15,
+  sesFromEmail: "andres@example.com",
+  sesToEmail: "andres@example.com",
 };

@@ -7,6 +7,8 @@ export interface EnvironmentConfig {
   enableWaf: boolean;
   lambdaMemory: number;
   lambdaTimeoutSeconds: number;
+  sesFromEmail: string;
+  sesToEmail: string;
 }
 
 export const devConfig: EnvironmentConfig = {
@@ -18,4 +20,6 @@ export const devConfig: EnvironmentConfig = {
   enableWaf: false,
   lambdaMemory: 256,
   lambdaTimeoutSeconds: 10,
+  sesFromEmail: "andres@example.com",
+  sesToEmail: "andres@example.com",
 };

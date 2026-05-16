@@ -398,6 +398,26 @@ When `context = cv`, confirm upload also updates `PROFILE / SETTINGS` with `cvFi
 
 ---
 
+## Email Worker
+
+`lambdas/email_worker/handler.py` is an SQS-triggered Lambda, not an HTTP route handler. It processes contact form notification messages from `portfolio-<stage>-contact-queue`.
+
+Flow:
+
+| Step | Behavior |
+|---|---|
+| Contact submit | `POST /contact` saves the message and sends the message payload to SQS |
+| SQS trigger | The email worker receives a batch of SQS records |
+| SES send | `process_record(record)` sends an SES email to `SES_TO_EMAIL` from `SES_FROM_EMAIL` |
+| Failure | Exceptions are reported as batch item failures so SQS retries the failed record |
+| DLQ | After three failed receives, SQS moves the message to `portfolio-<stage>-contact-dlq` |
+
+The worker logs `send_contact_email` with the message ID, recipient, and success flag on success. SES failures are logged at error level and re-raised so SQS retry and DLQ behavior is preserved.
+
+SES sandbox note: in dev, both `SES_FROM_EMAIL` and `SES_TO_EMAIL` must be verified SES identities before email delivery works.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented
