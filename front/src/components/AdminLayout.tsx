@@ -5,6 +5,7 @@ import { type ReactNode, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { App, Avatar, Button, Layout, Menu, Space, Typography } from "antd";
 import {
+  AuditOutlined,
   DashboardOutlined,
   HistoryOutlined,
   FolderOpenOutlined,
@@ -34,6 +35,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       ? ROUTES.ADMIN_EXPERIENCE
       : location.pathname.startsWith(ROUTES.ADMIN_SKILLS)
         ? ROUTES.ADMIN_SKILLS
+        : location.pathname.startsWith(ROUTES.ADMIN_CERTIFICATIONS)
+          ? ROUTES.ADMIN_CERTIFICATIONS
     : location.pathname;
 
   const handleSignOut = async () => {
@@ -80,6 +83,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               key: ROUTES.ADMIN_SKILLS,
               icon: <ToolOutlined />,
               label: "Skills",
+            },
+            {
+              key: ROUTES.ADMIN_CERTIFICATIONS,
+              icon: <AuditOutlined />,
+              label: "Certifications",
             },
             {
               key: ROUTES.ADMIN_SETTINGS,

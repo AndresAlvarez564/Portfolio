@@ -334,6 +334,21 @@ The skills feature uses:
 
 The public page groups the list by the fixed category order: cloud, backend, frontend, devops, and databases. The backend filters hidden skills before the frontend receives data.
 
+### Certifications pages
+
+The certifications feature uses:
+
+| File | Purpose |
+|---|---|
+| `front/src/services/certificationsService.ts` | Typed API client for public list and admin mutations |
+| `front/src/services/mediaService.ts` | Badge upload helper for `/media/upload` and `/media/confirm` |
+| `front/src/types/certification.ts` | `Certification` and `CertificationInput` types |
+| `front/src/pages/public/CertificationsPage.tsx` | Public card grid with badge previews and verification links |
+| `front/src/pages/admin/CertificationsPage.tsx` | Admin table with create, edit, and delete actions |
+| `front/src/components/admin/CertificationForm.tsx` | Shared add/edit form with badge upload and manual badge URL fields |
+
+Badge upload follows the media flow: request a signed upload URL, upload the image directly to S3, confirm the media record, then save `badgeUrl` and `badgeS3Key` on the certification.
+
 ### Layout components
 
 `AdminLayout` is the shared wrapper for all protected admin pages. It provides the top navigation bar with the user's email and sign-out button. Every admin page should render inside `AdminLayout`:

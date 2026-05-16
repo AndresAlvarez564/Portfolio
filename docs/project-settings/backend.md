@@ -337,6 +337,25 @@ Skills use `gsi1pk = SKILL` and `gsi1sk = VISIBILITY#<visibility>#<category>`. T
 
 ---
 
+## Certifications Module
+
+`lambdas/certifications/routes/certifications.py` implements certification CRUD against DynamoDB `CERTIFICATION` items.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `GET` | `/certifications` | Public | Queries `gsi1pk = CERTIFICATION`, sorted by newest issue date first |
+| `POST` | `/certifications` | Admin | Validates input, generates `certificationId`, creates a certification |
+| `PUT` | `/certifications/{id}` | Admin | Replaces editable fields and refreshes `gsi1sk` |
+| `DELETE` | `/certifications/{id}` | Admin | Deletes the certification metadata item |
+
+Required fields are `name`, `issuer`, and `issueDate`. `issueDate` must use `YYYY-MM`; `expirationDate` is optional but must use `YYYY-MM` when present.
+
+Certifications use `gsi1pk = CERTIFICATION` and `gsi1sk = ISSUE_DATE#<issueDate>#CERTIFICATION#<id>`. The public route reads all certifications with `ScanIndexForward = False`, so the newest credentials are returned first.
+
+---
+
 **Last Updated:** 2026-05-11
 **Status:** Initial draft
 **Next:** Update this document as Phase 2 feature tickets are implemented

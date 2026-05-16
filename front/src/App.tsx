@@ -10,6 +10,7 @@ import ProjectsPage from "./pages/public/ProjectsPage";
 import ProjectDetailPage from "./pages/public/ProjectDetailPage";
 import ExperiencePage from "./pages/public/ExperiencePage";
 import SkillsPage from "./pages/public/SkillsPage";
+import CertificationsPage from "./pages/public/CertificationsPage";
 import AboutPage from "./pages/public/AboutPage";
 import NotFoundPage from "./pages/public/NotFoundPage";
 
@@ -21,6 +22,7 @@ import ProjectsListPage from "./pages/admin/ProjectsListPage";
 import ProjectFormPage from "./pages/admin/ProjectFormPage";
 import AdminExperiencePage from "./pages/admin/ExperiencePage";
 import AdminSkillsPage from "./pages/admin/SkillsPage";
+import AdminCertificationsPage from "./pages/admin/CertificationsPage";
 
 const App = () => {
   return (
@@ -34,6 +36,7 @@ const App = () => {
           <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
           <Route path={ROUTES.EXPERIENCE} element={<ExperiencePage />} />
           <Route path={ROUTES.SKILLS} element={<SkillsPage />} />
+          <Route path={ROUTES.CERTIFICATIONS} element={<CertificationsPage />} />
           <Route path={ROUTES.ABOUT} element={<AboutPage />} />
 
           {/* Admin routes — protected */}
@@ -92,6 +95,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <AdminSkillsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.ADMIN_CERTIFICATIONS}
+            element={
+              <ProtectedRoute>
+                <AdminCertificationsPage />
               </ProtectedRoute>
             }
           />
