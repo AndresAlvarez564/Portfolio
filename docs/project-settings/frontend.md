@@ -288,6 +288,20 @@ const { isAuthenticated, isAdmin, signOut, idToken } = useAuthContext();
 
 If a file exceeds these limits, split it into smaller focused units.
 
+### Home page
+
+The public homepage uses `front/src/hooks/useHomePage.ts` to load the landing-page sections in parallel:
+
+| Data | Service |
+|---|---|
+| Profile hero | `getProfile()` |
+| Featured projects | `listProjects()` filtered to `featured = true` |
+| Experience preview | `listExperience()` sliced to the first entries |
+| Skills preview | `listSkills()` grouped by category |
+| Certifications preview | `listCertifications()` sliced to the first entries |
+
+The hook settles each request independently and exposes per-section loading and error state. A failed section renders a local fallback while the rest of the page continues to render.
+
 ### Projects pages
 
 The projects feature uses:
