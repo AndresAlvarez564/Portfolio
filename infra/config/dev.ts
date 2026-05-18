@@ -20,6 +20,6 @@ export const devConfig: EnvironmentConfig = {
   enableWaf: false,
   lambdaMemory: 256,
   lambdaTimeoutSeconds: 10,
-  sesFromEmail: "andres@example.com",
-  sesToEmail: "andres@example.com",
+  sesFromEmail: "andresisaacalvaresherrera12@gmail.com",
+  sesToEmail: "andresisaacalvaresherrera12@gmail.com",
 };
