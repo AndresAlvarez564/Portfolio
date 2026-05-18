@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./HomePage";
@@ -107,7 +107,7 @@ describe("HomePage", () => {
     expect(await screen.findByText("About Me")).toBeInTheDocument();
     expect(screen.getByText("I connect cloud architecture with practical delivery.")).toBeInTheDocument();
     expect(screen.getByText("Clear documentation")).toBeInTheDocument();
-    expect(screen.getByText("Read More")).toBeInTheDocument();
+    expect(screen.getByText("My Story")).toBeInTheDocument();
   });
 
   it("hides cv button when no cv url", async () => {
@@ -119,13 +119,13 @@ describe("HomePage", () => {
     expect(screen.queryByText("Download CV")).not.toBeInTheDocument();
   });
 
-  it("hides featured section when empty", async () => {
+  it("renders empty featured state when there are no featured projects", async () => {
     vi.mocked(listProjects).mockResolvedValue([{ ...project, featured: false }]);
 
     renderHome();
 
     await screen.findByText("Andres Alvarez");
-    await waitFor(() => expect(screen.queryByText("Featured Projects")).not.toBeInTheDocument());
+    expect(await screen.findByText("No featured projects yet.")).toBeInTheDocument();
   });
 
   it("renders fallback when api fails", async () => {

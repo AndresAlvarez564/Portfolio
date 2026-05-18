@@ -46,7 +46,7 @@ describe("AboutPage", () => {
     renderAbout();
 
     expect(await screen.findByText("Cloud direction")).toBeInTheDocument();
-    expect(screen.getByText("Cloud And AWS Focus")).toBeInTheDocument();
+    expect(screen.getByText("Cloud & AWS Focus")).toBeInTheDocument();
     expect(screen.getByText("AWS serverless")).toBeInTheDocument();
     expect(screen.getByText("What I Build")).toBeInTheDocument();
     expect(screen.getByText("Editable story from admin.")).toBeInTheDocument();
