@@ -153,7 +153,9 @@ const HomePage = () => {
     ? focusParagraphs
     : defaultFocusAreas;
 
-  const certsPreview       = certifications.slice(0, CERTIFICATIONS_PREVIEW);
+  const certsInProgress    = certifications.filter((c) => c.inProgress);
+  const certsEarned        = certifications.filter((c) => !c.inProgress);
+  const certsPreview       = [...certsInProgress, ...certsEarned].slice(0, CERTIFICATIONS_PREVIEW);
   const hasMoreCerts       = certifications.length > CERTIFICATIONS_PREVIEW;
 
   return (
@@ -549,15 +551,27 @@ const HomePage = () => {
               <>
                 <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
                   {certsPreview.map((cert) => (
-                    <Card key={cert.certificationId} className="glass-card" styles={{ body: { padding: 20, textAlign: "center" } }}>
+                    <Card
+                      key={cert.certificationId}
+                      className="glass-card"
+                      styles={{ body: { padding: 20, textAlign: "center" } }}
+                      style={cert.inProgress ? { borderColor: "rgba(251,191,36,0.2)" } : undefined}
+                    >
                       <div style={{ alignItems: "center", display: "flex", height: 72, justifyContent: "center", marginBottom: 12 }}>
                         {cert.badgeUrl
                           ? <Image src={cert.badgeUrl} alt={`${cert.name} badge`} height={72} preview={false} style={{ objectFit: "contain" }} />
-                          : <span style={{ color: "#22d3ee", fontSize: 36 }}>✦</span>
+                          : <span style={{ color: cert.inProgress ? "#fbbf24" : "#22d3ee", fontSize: 36 }}>✦</span>
                         }
                       </div>
                       <Title level={5} style={{ color: "#f9fafb", margin: "0 0 4px" }}>{cert.name}</Title>
                       <Text style={{ color: "#22d3ee", fontSize: 13 }}>{cert.issuer}</Text>
+                      {cert.inProgress && (
+                        <div style={{ marginTop: 8 }}>
+                          <span style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 4, color: "#fbbf24", fontSize: 11, fontWeight: 600, padding: "2px 8px" }}>
+                            Studying
+                          </span>
+                        </div>
+                      )}
                     </Card>
                   ))}
                 </div>

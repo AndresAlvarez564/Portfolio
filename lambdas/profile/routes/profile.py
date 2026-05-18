@@ -31,6 +31,9 @@ _MAX_LENGTHS = {
     "aboutFocus": 1500,
     "aboutBuilds": 1500,
     "aboutValues": 1000,
+    "contactEmail": 254,
+    "whatsapp": 30,
+    "contactNote": 300,
 }
 
 
@@ -101,7 +104,9 @@ def update_profile(event):
             "SET #name = :name, title = :title, summary = :summary, "
             "#location = :location, aboutIntro = :aboutIntro, aboutFocus = :aboutFocus, "
             "aboutBuilds = :aboutBuilds, aboutValues = :aboutValues, "
-            "socialLinks = :socialLinks, avatarUrl = :avatarUrl, updatedAt = :updatedAt"
+            "socialLinks = :socialLinks, avatarUrl = :avatarUrl, "
+            "contactEmail = :contactEmail, whatsapp = :whatsapp, contactNote = :contactNote, "
+            "updatedAt = :updatedAt"
         ),
         ExpressionAttributeNames={"#name": "name", "#location": "location"},
         ExpressionAttributeValues={
@@ -115,6 +120,9 @@ def update_profile(event):
             ":aboutValues": str(body.get("aboutValues", "")).strip(),
             ":socialLinks": social_links,
             ":avatarUrl": str(body.get("avatarUrl", "")).strip(),
+            ":contactEmail": str(body.get("contactEmail", "")).strip(),
+            ":whatsapp": str(body.get("whatsapp", "")).strip(),
+            ":contactNote": str(body.get("contactNote", "")).strip(),
             ":updatedAt": now,
         },
     )

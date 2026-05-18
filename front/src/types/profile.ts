@@ -18,6 +18,9 @@ export interface ProfileData {
   aboutBuilds?: string;
   aboutValues?: string;
   avatarUrl?: string;
+  contactEmail?: string;
+  whatsapp?: string;
+  contactNote?: string;
   cvFileUrl?: string;
   socialLinks: SocialLinks;
   updatedAt?: string;

@@ -19,6 +19,9 @@ const schema = yup.object({
   aboutFocus:  yup.string().max(1500, "Cloud focus must not exceed 1500 characters.").optional().default(""),
   aboutBuilds: yup.string().max(1500, "What I build must not exceed 1500 characters.").optional().default(""),
   aboutValues: yup.string().max(1000, "Work values must not exceed 1000 characters.").optional().default(""),
+  contactEmail: yup.string().email("Must be a valid email.").optional().default(""),
+  whatsapp:     yup.string().max(30, "Max 30 characters.").optional().default(""),
+  contactNote:  yup.string().max(300, "Max 300 characters.").optional().default(""),
   github:   yup.string().url("Must be a valid URL.").optional().default(""),
   linkedin: yup.string().url("Must be a valid URL.").optional().default(""),
   twitter:  yup.string().url("Must be a valid URL.").optional().default(""),
@@ -55,6 +58,9 @@ const ProfileSettingsPage = () => {
           aboutFocus:  data.aboutFocus  ?? "",
           aboutBuilds: data.aboutBuilds ?? "",
           aboutValues: data.aboutValues ?? "",
+          contactEmail: data.contactEmail ?? "",
+          whatsapp:     data.whatsapp     ?? "",
+          contactNote:  data.contactNote  ?? "",
           github:   data.socialLinks?.github   ?? "",
           linkedin: data.socialLinks?.linkedin ?? "",
           twitter:  data.socialLinks?.twitter  ?? "",
@@ -77,6 +83,8 @@ const ProfileSettingsPage = () => {
         name: values.name, title: values.title, summary: values.summary, location: values.location,
         aboutIntro: values.aboutIntro || undefined, aboutFocus: values.aboutFocus || undefined,
         aboutBuilds: values.aboutBuilds || undefined, aboutValues: values.aboutValues || undefined,
+        contactEmail: values.contactEmail || undefined, whatsapp: values.whatsapp || undefined,
+        contactNote: values.contactNote || undefined,
         socialLinks: { github: values.github || undefined, linkedin: values.linkedin || undefined,
           twitter: values.twitter || undefined, website: values.website || undefined },
         avatarUrl: newUrl,
@@ -103,6 +111,9 @@ const ProfileSettingsPage = () => {
         aboutBuilds: values.aboutBuilds || undefined,
         aboutValues: values.aboutValues || undefined,
         avatarUrl: avatarUrl || undefined,
+        contactEmail: values.contactEmail || undefined,
+        whatsapp:     values.whatsapp     || undefined,
+        contactNote:  values.contactNote  || undefined,
         socialLinks: {
           github:   values.github   || undefined,
           linkedin: values.linkedin || undefined,
@@ -173,6 +184,8 @@ const ProfileSettingsPage = () => {
                           name: values.name, title: values.title, summary: values.summary, location: values.location,
                           aboutIntro: values.aboutIntro || undefined, aboutFocus: values.aboutFocus || undefined,
                           aboutBuilds: values.aboutBuilds || undefined, aboutValues: values.aboutValues || undefined,
+                          contactEmail: values.contactEmail || undefined, whatsapp: values.whatsapp || undefined,
+                          contactNote: values.contactNote || undefined,
                           socialLinks: { github: values.github || undefined, linkedin: values.linkedin || undefined,
                             twitter: values.twitter || undefined, website: values.website || undefined },
                           avatarUrl: "",
@@ -227,6 +240,20 @@ const ProfileSettingsPage = () => {
 
           <Form.Item label="Work Values" validateStatus={errors.aboutValues ? "error" : ""} help={errors.aboutValues?.message}>
             <Controller name="aboutValues" control={control} render={({ field }) => <Input.TextArea rows={3} {...field} />} />
+          </Form.Item>
+
+          <Typography.Title level={4}>Contact Info</Typography.Title>
+
+          <Form.Item label="Public Email" validateStatus={errors.contactEmail ? "error" : ""} help={errors.contactEmail?.message}>
+            <Controller name="contactEmail" control={control} render={({ field }) => <Input {...field} placeholder="hello@example.com" />} />
+          </Form.Item>
+
+          <Form.Item label="WhatsApp Number" validateStatus={errors.whatsapp ? "error" : ""} help={errors.whatsapp?.message}>
+            <Controller name="whatsapp" control={control} render={({ field }) => <Input {...field} placeholder="+591 71234567" />} />
+          </Form.Item>
+
+          <Form.Item label="Availability / Note" validateStatus={errors.contactNote ? "error" : ""} help={errors.contactNote?.message}>
+            <Controller name="contactNote" control={control} render={({ field }) => <Input.TextArea rows={2} {...field} placeholder="e.g. Open to freelance. Typically responds within 24h." />} />
           </Form.Item>
 
           <Typography.Title level={4}>Social Links</Typography.Title>
