@@ -66,9 +66,11 @@ export function useHomePage() {
       },
       "Featured projects are unavailable.",
     );
-    void settle("experience", listExperience(), (items) => setExperience(items.slice(0, 2)), "Experience is unavailable.");
+    // No slice — homepage shows experience preview (component decides count)
+    void settle("experience", listExperience(), setExperience, "Experience is unavailable.");
     void settle("skills", listSkills(), setSkills, "Skills are unavailable.");
-    void settle("certifications", listCertifications(), (items) => setCertifications(items.slice(0, 3)), "Certifications are unavailable.");
+    // No slice — homepage shows certifications preview (component decides count)
+    void settle("certifications", listCertifications(), setCertifications, "Certifications are unavailable.");
 
     return () => {
       mounted = false;

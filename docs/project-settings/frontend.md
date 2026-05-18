@@ -425,6 +425,83 @@ const DashboardPage = () => (
 
 ---
 
+## Public Design System
+
+> Implemented in TK-37. Apply these conventions to all public pages.
+
+### Design tokens (CSS custom properties in `index.css`)
+
+| Token | Value | Usage |
+|---|---|---|
+| `--bg` | `#090909` | Page background |
+| `--surface` | `rgba(255,255,255,0.04)` | Glass card background |
+| `--accent` | `#22d3ee` | Cyan primary accent |
+| `--accent-dim` | `rgba(34,211,238,0.12)` | Accent tinted backgrounds |
+| `--text` | `#f9fafb` | Primary text |
+| `--muted` | `#6b7280` | Secondary / meta text |
+| `--border` | `rgba(255,255,255,0.08)` | Subtle borders |
+
+### Ant Design theme
+
+Public pages are wrapped in `PublicLayout` (`components/PublicLayout.tsx`) which applies a `ConfigProvider` with `theme.darkAlgorithm` and the following token overrides:
+
+```ts
+{
+  colorPrimary: "#22d3ee",
+  colorBgBase: "#090909",
+  colorBgContainer: "rgba(255,255,255,0.04)",
+  colorText: "#f9fafb",
+  colorTextSecondary: "#6b7280",
+  colorBorder: "rgba(255,255,255,0.1)",
+  borderRadius: 10,
+  fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+}
+```
+
+Admin pages are **not** wrapped in `PublicLayout` and use Ant Design's default light theme.
+
+### CSS utility classes
+
+| Class | Effect |
+|---|---|
+| `.glass-card` | Frosted glass card — dark translucent bg, subtle border, hover lift + cyan glow |
+| `.gradient-text` | White-to-cyan gradient text fill (used for hero headings) |
+| `.btn-gradient` | Cyan-to-teal gradient button with glow on hover (CTAs) |
+| `.tag-cyan` | Cyan tinted skill/tech tag |
+| `.cta-banner` | Section block with cyan accent border — used for end-of-page CTA sections |
+| `.fade-in` / `.fade-in-1..4` | Staggered fade-in-up entrance animation (0–0.42s delays) |
+| `.section-divider` | Gradient `<hr>` divider (transparent → cyan → transparent) |
+
+### Layout conventions
+
+- **Page container:** `max-width: 1120px`, `padding: 48px 24px` (use `960px` for detail/form pages)
+- **Section spacing:** `size={56}` or `gap: 64px` between major sections
+- **Section heading:** `<Title level={2}` with `color: #f9fafb`, bold. Paired with a `View All` link in accent color.
+- **Cards:** Always use `.glass-card` class on `<Card>` — do not use Ant Design's default card surface on public pages.
+- **Headings on hero blocks:** Use `className="gradient-text"` on an `<h1>` or `<h2>` (not `<Title>` — gradient requires `-webkit-text-fill-color` which AntD's Typography overrides).
+- **Skill/tech tags:** Apply `tagStyle` inline (`rgba(34,211,238,0.1)` bg, cyan border and text).
+- **Category-specific tags (SkillsPage):** Each category has its own accent color — cloud (cyan), backend (violet), frontend (amber), devops (emerald), databases (red).
+
+### Navigation
+
+`PublicNavbar` (`components/PublicNavbar.tsx`) is a sticky top navbar rendered by `PublicLayout`. It:
+- Highlights the active link by comparing `pathname` to each route.
+- Collapses to a hamburger menu on viewports ≤ 768px via `.nav-hamburger` / `.nav-links-desktop` CSS classes.
+- Does **not** appear on admin pages.
+
+### Typography scale
+
+| Element | Size | Weight | Color |
+|---|---|---|---|
+| H1 hero | `clamp(40px, 6vw, 64px)` | 800 | gradient-text |
+| H1 page title | `clamp(28px, 4vw, 44px)` | 800 | `#f9fafb` |
+| H2 section | AntD default level 2 | 700 | `#f9fafb` |
+| Body | 16–17px | 400 | `#d1d5db` |
+| Meta / secondary | 13–14px | 400 | `#6b7280` |
+| Font | Inter (Google Fonts) | — | — |
+
+---
+
 ## Form Handling
 
 Forms use React Hook Form for state management and Yup for schema validation.

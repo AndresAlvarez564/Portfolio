@@ -30,6 +30,13 @@ const defaultValues: FormValues = {
   website: "",
 };
 
+const inputStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#f9fafb",
+  borderRadius: 8,
+};
+
 const ContactPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -54,68 +61,91 @@ const ContactPage = () => {
 
   if (submitted) {
     return (
-      <main style={{ margin: "0 auto", maxWidth: 760, padding: 24 }}>
+      <main style={{ margin: "0 auto", maxWidth: 760, padding: "48px 24px" }}>
         <Result
           status="success"
-          title="Your message has been sent."
-          subTitle="Thanks for reaching out. I will follow up as soon as possible."
+          title={<span style={{ color: "#f9fafb" }}>Message sent.</span>}
+          subTitle={<span style={{ color: "#9ca3af" }}>Thanks for reaching out. I will follow up as soon as possible.</span>}
         />
       </main>
     );
   }
 
   return (
-    <main style={{ margin: "0 auto", maxWidth: 760, padding: 24 }}>
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <div>
-          <Typography.Title level={1} style={{ marginBottom: 0 }}>
+    <main style={{ margin: "0 auto", maxWidth: 760, padding: "48px 24px" }}>
+      <Space direction="vertical" size={40} style={{ width: "100%" }}>
+
+        <div className="fade-in">
+          <Typography.Title
+            level={1}
+            style={{ color: "#f9fafb", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, marginBottom: 8 }}
+          >
             Contact
           </Typography.Title>
-          <Typography.Text type="secondary">
+          <Typography.Text style={{ color: "#6b7280", fontSize: 16 }}>
             Share the project details and the best way to reach you.
           </Typography.Text>
         </div>
 
         {submitError && <Alert type="error" message={submitError} showIcon />}
 
-        <Form layout="vertical" onFinish={handleSubmit(submit)}>
-          <Form.Item label="Name" validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
-            <Controller name="name" control={control} render={({ field }) => <Input {...field} />} />
+        <Form layout="vertical" onFinish={handleSubmit(submit)} className="fade-in-1">
+          <Form.Item label={<span style={{ color: "#d1d5db" }}>Name</span>}
+            validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
+            <Controller name="name" control={control}
+              render={({ field }) => <Input {...field} style={inputStyle} />} />
           </Form.Item>
 
-          <Form.Item label="Email" validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
-            <Controller name="email" control={control} render={({ field }) => <Input {...field} />} />
+          <Form.Item label={<span style={{ color: "#d1d5db" }}>Email</span>}
+            validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
+            <Controller name="email" control={control}
+              render={({ field }) => <Input {...field} style={inputStyle} />} />
           </Form.Item>
 
           <Space style={{ width: "100%" }} size="middle" align="start">
-            <Form.Item label="Company" validateStatus={errors.company ? "error" : ""} help={errors.company?.message}>
-              <Controller name="company" control={control} render={({ field }) => <Input {...field} />} />
+            <Form.Item label={<span style={{ color: "#d1d5db" }}>Company</span>}
+              validateStatus={errors.company ? "error" : ""} help={errors.company?.message}
+              style={{ flex: 1 }}>
+              <Controller name="company" control={control}
+                render={({ field }) => <Input {...field} style={inputStyle} />} />
             </Form.Item>
-            <Form.Item label="Budget" validateStatus={errors.budget ? "error" : ""} help={errors.budget?.message}>
-              <Controller name="budget" control={control} render={({ field }) => <Input {...field} />} />
+            <Form.Item label={<span style={{ color: "#d1d5db" }}>Budget</span>}
+              validateStatus={errors.budget ? "error" : ""} help={errors.budget?.message}
+              style={{ flex: 1 }}>
+              <Controller name="budget" control={control}
+                render={({ field }) => <Input {...field} style={inputStyle} />} />
             </Form.Item>
           </Space>
 
-          <Form.Item label="Project Type" validateStatus={errors.projectType ? "error" : ""} help={errors.projectType?.message}>
-            <Controller name="projectType" control={control} render={({ field }) => <Input {...field} />} />
+          <Form.Item label={<span style={{ color: "#d1d5db" }}>Project Type</span>}
+            validateStatus={errors.projectType ? "error" : ""} help={errors.projectType?.message}>
+            <Controller name="projectType" control={control}
+              render={({ field }) => <Input {...field} style={inputStyle} />} />
           </Form.Item>
 
-          <Form.Item label="Subject" validateStatus={errors.subject ? "error" : ""} help={errors.subject?.message}>
-            <Controller name="subject" control={control} render={({ field }) => <Input {...field} />} />
+          <Form.Item label={<span style={{ color: "#d1d5db" }}>Subject</span>}
+            validateStatus={errors.subject ? "error" : ""} help={errors.subject?.message}>
+            <Controller name="subject" control={control}
+              render={({ field }) => <Input {...field} style={inputStyle} />} />
           </Form.Item>
 
-          <Form.Item label="Message" validateStatus={errors.message ? "error" : ""} help={errors.message?.message}>
-            <Controller name="message" control={control} render={({ field }) => <Input.TextArea rows={7} {...field} />} />
+          <Form.Item label={<span style={{ color: "#d1d5db" }}>Message</span>}
+            validateStatus={errors.message ? "error" : ""} help={errors.message?.message}>
+            <Controller name="message" control={control}
+              render={({ field }) => <Input.TextArea rows={7} {...field} style={inputStyle} />} />
           </Form.Item>
 
+          {/* Honeypot */}
           <div aria-hidden="true" style={{ height: 0, left: -10000, overflow: "hidden", position: "absolute", width: 0 }}>
-            <Controller name="website" control={control} render={({ field }) => <Input {...field} tabIndex={-1} autoComplete="off" />} />
+            <Controller name="website" control={control}
+              render={({ field }) => <Input {...field} tabIndex={-1} autoComplete="off" />} />
           </div>
 
-          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button className="btn-gradient" size="large" htmlType="submit" loading={isSubmitting}>
             Send Message
           </Button>
         </Form>
+
       </Space>
     </main>
   );
