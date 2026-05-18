@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { App, Button, Empty, Modal, Popconfirm, Space, Table, Tag, Typography } from "antd";
+import { App, Button, Card, Empty, Modal, Popconfirm, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import AdminLayout from "../../components/AdminLayout";
@@ -126,7 +126,7 @@ const AdminSkillsPage = () => {
   return (
     <AdminLayout>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Space align="center" style={{ justifyContent: "space-between", width: "100%" }}>
+        <Space align="center" className="admin-page-header" style={{ justifyContent: "space-between", width: "100%" }}>
           <div>
             <Typography.Title level={2} style={{ marginBottom: 0 }}>
               Skills
@@ -143,13 +143,45 @@ const AdminSkillsPage = () => {
         {items.length === 0 && !loading ? (
           <Empty description="No skills yet." />
         ) : (
-          <Table
-            rowKey="skillId"
-            columns={columns}
-            dataSource={items}
-            loading={loading}
-            pagination={false}
-          />
+          <>
+            {/* Desktop table */}
+            <div className="admin-table-desktop">
+              <Table
+                rowKey="skillId"
+                columns={columns}
+                dataSource={items}
+                loading={loading}
+                pagination={false}
+              />
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards-mobile">
+              {items.map((item) => (
+                <Card key={item.skillId} size="small">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                      <Typography.Text strong ellipsis style={{ display: "block" }}>{item.name}</Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        {item.category.charAt(0).toUpperCase() + item.category.slice(1)} · order {item.order}
+                      </Typography.Text>
+                    </div>
+                    <Space size={8}>
+                      <Tag color={item.visibility === "visible" ? "green" : "default"}>{item.visibility}</Tag>
+                      <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(item)} />
+                      <Popconfirm
+                        title="Delete skill?"
+                        description="This action cannot be undone."
+                        onConfirm={() => removeItem(item)}
+                      >
+                        <Button size="small" danger icon={<DeleteOutlined />} />
+                      </Popconfirm>
+                    </Space>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
       </Space>
 

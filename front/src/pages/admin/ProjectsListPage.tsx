@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   App,
   Button,
+  Card,
   Popconfirm,
   Space,
   Switch,
@@ -71,7 +72,7 @@ const ProjectsListPage = () => {
   return (
     <AdminLayout>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Space align="center" style={{ justifyContent: "space-between", width: "100%" }}>
+        <Space align="center" className="admin-page-header" style={{ justifyContent: "space-between", width: "100%" }}>
           <div>
             <Typography.Title level={2} style={{ marginBottom: 0 }}>
               Projects
@@ -89,6 +90,8 @@ const ProjectsListPage = () => {
           </Button>
         </Space>
 
+        {/* Desktop table */}
+        <div className="admin-table-desktop">
         <Table<Project>
           rowKey="projectId"
           loading={loading}
@@ -158,6 +161,61 @@ const ProjectsListPage = () => {
             },
           ]}
         />
+        </div>
+
+        {/* Mobile cards */}
+        <div className="admin-cards-mobile">
+          {projects.map((project) => (
+            <Card key={project.projectId} size="small">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                  <Typography.Text strong ellipsis style={{ display: "block" }}>{project.title}</Typography.Text>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>{project.slug}</Typography.Text>
+                </div>
+                <Tag color={project.status === "published" ? "green" : project.status === "in-progress" ? "warning" : "default"}>
+                  {project.status}
+                </Tag>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
+                <Space size={6}>
+                  <Typography.Text type="secondary" style={{ fontSize: 13 }}>Published</Typography.Text>
+                  <Switch
+                    size="small"
+                    checked={project.status === "published"}
+                    onChange={(checked) => updateProjectPatch(project, { status: checked ? "published" : "draft" })}
+                  />
+                </Space>
+                <Space size={6}>
+                  <Typography.Text type="secondary" style={{ fontSize: 13 }}>Featured</Typography.Text>
+                  <Switch
+                    size="small"
+                    checked={project.featured}
+                    onChange={(checked) => updateProjectPatch(project, { featured: checked })}
+                  />
+                </Space>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {new Date(project.createdAt).toLocaleDateString()}
+                </Typography.Text>
+                <Space size={8}>
+                  <Button
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => navigate(`${ROUTES.ADMIN_PROJECTS}/${project.projectId}/edit`)}
+                  />
+                  <Popconfirm
+                    title="Delete project?"
+                    description="This action cannot be undone."
+                    onConfirm={() => removeProject(project)}
+                  >
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Space>
+              </div>
+            </Card>
+          ))}
+        </div>
       </Space>
     </AdminLayout>
   );

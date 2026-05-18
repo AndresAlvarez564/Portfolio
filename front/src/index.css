@@ -222,3 +222,32 @@ body {
     display: none !important;
   }
 }
+
+/* ── Admin responsive table / card toggle ─────────────── */
+
+.admin-table-desktop {
+  display: block;
+}
+
+.admin-cards-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-table-desktop {
+    display: none !important;
+  }
+
+  .admin-cards-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Prevent header row from wrapping awkwardly */
+  .admin-page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+}

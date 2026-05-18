@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { App, Button, Empty, Modal, Popconfirm, Space, Table, Tag, Typography } from "antd";
+import { App, Button, Card, Empty, Modal, Popconfirm, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import AdminLayout from "../../components/AdminLayout";
@@ -125,7 +125,7 @@ const AdminCertificationsPage = () => {
   return (
     <AdminLayout>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Space align="center" style={{ justifyContent: "space-between", width: "100%" }}>
+        <Space align="center" className="admin-page-header" style={{ justifyContent: "space-between", width: "100%" }}>
           <div>
             <Typography.Title level={2} style={{ marginBottom: 0 }}>
               Certifications
@@ -142,13 +142,48 @@ const AdminCertificationsPage = () => {
         {items.length === 0 && !loading ? (
           <Empty description="No certifications yet." />
         ) : (
-          <Table
-            rowKey="certificationId"
-            columns={columns}
-            dataSource={items}
-            loading={loading}
-            pagination={false}
-          />
+          <>
+            {/* Desktop table */}
+            <div className="admin-table-desktop">
+              <Table
+                rowKey="certificationId"
+                columns={columns}
+                dataSource={items}
+                loading={loading}
+                pagination={false}
+              />
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards-mobile">
+              {items.map((item) => (
+                <Card key={item.certificationId} size="small">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                      <Typography.Text strong ellipsis style={{ display: "block" }}>{item.name}</Typography.Text>
+                      <Typography.Text type="secondary">{item.issuer}</Typography.Text>
+                    </div>
+                    {item.inProgress
+                      ? <Tag color="warning">In Progress</Tag>
+                      : <Tag color="success">Completed</Tag>}
+                  </div>
+                  <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 10 }}>
+                    {item.issueDate || "No date"}{item.expirationDate ? ` → ${item.expirationDate}` : ""}
+                  </Typography.Text>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                    <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(item)} />
+                    <Popconfirm
+                      title="Delete certification?"
+                      description="This action cannot be undone."
+                      onConfirm={() => removeItem(item)}
+                    >
+                      <Button size="small" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
       </Space>
 

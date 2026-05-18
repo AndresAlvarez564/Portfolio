@@ -124,15 +124,6 @@ const defaultValues = [
   "Security-aware defaults",
 ];
 
-const defaultFocusAreas = [
-  "AWS serverless",
-  "API design",
-  "DynamoDB data modeling",
-  "Infrastructure as code",
-  "Security basics",
-  "Operational visibility",
-];
-
 /* ─── Page ────────────────────────────────────────────── */
 const HomePage = () => {
   const { profile, featuredProjects, experience, skills, certifications, loading, errors } =
@@ -149,9 +140,6 @@ const HomePage = () => {
   const focusParagraphs = splitText(profile?.aboutFocus, defaultAboutFocus);
   const buildItems      = splitText(profile?.aboutBuilds, defaultBuildItems.join("\n"));
   const valueItems      = splitText(profile?.aboutValues, defaultValues.join("\n"));
-  const focusAreas      = profile?.aboutFocus
-    ? focusParagraphs
-    : defaultFocusAreas;
 
   const certsInProgress    = certifications.filter((c) => c.inProgress);
   const certsEarned        = certifications.filter((c) => !c.inProgress);
@@ -263,11 +251,6 @@ const HomePage = () => {
                           {p}
                         </Paragraph>
                       ))}
-                      {focusParagraphs.map((p) => (
-                        <Paragraph key={p} style={{ color: "#d1d5db", fontSize: 16, lineHeight: 1.8, marginBottom: 12 }}>
-                          {p}
-                        </Paragraph>
-                      ))}
                     </div>
                     <Space>
                       {profile.socialLinks?.github && (
@@ -287,30 +270,23 @@ const HomePage = () => {
                     <Space direction="vertical" size="middle">
                       <CloudServerOutlined style={{ color: "#22d3ee", fontSize: 40 }} />
                       <Title level={3} style={{ color: "#f9fafb", margin: 0 }}>Cloud Direction</Title>
-                      <Paragraph style={{ color: "#9ca3af", margin: 0, lineHeight: 1.75 }}>
-                        {focusParagraphs[0] ?? defaultAboutFocus}
-                      </Paragraph>
-                      <Space size={[6, 6]} wrap>
-                        {(profile.aboutFocus ? [] : defaultFocusAreas).map((area) => (
-                          <Tag key={area} style={cyanTagStyle}>{area}</Tag>
-                        ))}
-                      </Space>
+                      {focusParagraphs.length === 1 ? (
+                        <Paragraph style={{ color: "#9ca3af", margin: 0, lineHeight: 1.75 }}>
+                          {focusParagraphs[0]}
+                        </Paragraph>
+                      ) : (
+                        <Space size={[6, 8]} wrap>
+                          {focusParagraphs.map((area) => (
+                            <Tag key={area} style={cyanTagStyle}>{area}</Tag>
+                          ))}
+                        </Space>
+                      )}
                     </Space>
                   </Card>
                 </div>
 
-                {/* AWS Focus tags */}
-                <div className="fade-in-1">
-                  <Title level={3} style={{ color: "#f9fafb", marginBottom: 16 }}>Cloud &amp; AWS Focus</Title>
-                  <Space size={[8, 8]} wrap>
-                    {focusAreas.map((area) => (
-                      <Tag key={area} style={cyanTagStyle}>{area}</Tag>
-                    ))}
-                  </Space>
-                </div>
-
                 {/* What I Build */}
-                <div className="fade-in-2">
+                <div className="fade-in-1">
                   <Title level={3} style={{ color: "#f9fafb", marginBottom: 20 }}>What I Build</Title>
                   <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
                     {buildItems.map((item) => (
@@ -322,7 +298,7 @@ const HomePage = () => {
                 </div>
 
                 {/* How I Work */}
-                <div className="fade-in-3">
+                <div className="fade-in-2">
                   <Title level={3} style={{ color: "#f9fafb", marginBottom: 16 }}>How I Work</Title>
                   <Space size={[8, 8]} wrap>
                     {valueItems.map((v) => (

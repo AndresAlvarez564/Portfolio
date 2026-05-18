@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { App, Badge, Button, Empty, Space, Table, Tabs, Tag, Typography } from "antd";
+import { App, Badge, Button, Card, Empty, Space, Table, Tabs, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { EyeOutlined } from "@ant-design/icons";
 import AdminLayout from "../../components/AdminLayout";
@@ -138,14 +138,41 @@ const MessagesPage = () => {
         {items.length === 0 && !loading ? (
           <Empty description="No messages found." />
         ) : (
-          <Table
-            rowKey="messageId"
-            columns={columns}
-            dataSource={items}
-            loading={loading}
-            pagination={false}
-            onRow={(item) => ({ onDoubleClick: () => openMessage(item) })}
-          />
+          <>
+            {/* Desktop table */}
+            <div className="admin-table-desktop">
+              <Table
+                rowKey="messageId"
+                columns={columns}
+                dataSource={items}
+                loading={loading}
+                pagination={false}
+                onRow={(item) => ({ onDoubleClick: () => openMessage(item) })}
+              />
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards-mobile">
+              {items.map((item) => (
+                <Card
+                  key={item.messageId}
+                  size="small"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => openMessage(item)}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                    <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                      <Typography.Text strong ellipsis style={{ display: "block" }}>{item.name}</Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>{item.email}</Typography.Text>
+                    </div>
+                    <Tag color={statusColor[item.status]}>{item.status}</Tag>
+                  </div>
+                  <Typography.Text style={{ fontSize: 13, display: "block", marginBottom: 4 }}>{item.subject}</Typography.Text>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>{item.createdAt}</Typography.Text>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
       </Space>
 
