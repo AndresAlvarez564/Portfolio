@@ -40,6 +40,9 @@ const MessageDetailModal = ({
             <Descriptions.Item label="Email">
               <a href={`mailto:${message.email}`}>{message.email}</a>
             </Descriptions.Item>
+            <Descriptions.Item label="Phone">
+              {message.phone ? <a href={`tel:${message.phone}`}>{message.phone}</a> : "-"}
+            </Descriptions.Item>
             <Descriptions.Item label="Company">{message.company || "-"}</Descriptions.Item>
             <Descriptions.Item label="Project Type">{message.projectType || "-"}</Descriptions.Item>
             <Descriptions.Item label="Budget">{message.budget || "-"}</Descriptions.Item>

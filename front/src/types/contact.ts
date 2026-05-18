@@ -6,6 +6,7 @@ export interface ContactMessage {
   messageId: string;
   name: string;
   email: string;
+  phone?: string;
   company?: string;
   projectType?: string;
   budget?: string;
@@ -19,6 +20,7 @@ export interface ContactMessage {
 export type ContactFormData = {
   name: string;
   email: string;
+  phone?: string;
   company?: string;
   projectType?: string;
   budget?: string;

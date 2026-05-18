@@ -2,6 +2,7 @@ export const MEDIA_CONTEXTS = [
   "project-screenshot",
   "project-thumbnail",
   "certification-badge",
+  "profile-avatar",
   "cv",
   "diagram",
 ] as const;

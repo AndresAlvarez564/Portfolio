@@ -101,7 +101,7 @@ def update_profile(event):
             "SET #name = :name, title = :title, summary = :summary, "
             "#location = :location, aboutIntro = :aboutIntro, aboutFocus = :aboutFocus, "
             "aboutBuilds = :aboutBuilds, aboutValues = :aboutValues, "
-            "socialLinks = :socialLinks, updatedAt = :updatedAt"
+            "socialLinks = :socialLinks, avatarUrl = :avatarUrl, updatedAt = :updatedAt"
         ),
         ExpressionAttributeNames={"#name": "name", "#location": "location"},
         ExpressionAttributeValues={
@@ -114,6 +114,7 @@ def update_profile(event):
             ":aboutBuilds": str(body.get("aboutBuilds", "")).strip(),
             ":aboutValues": str(body.get("aboutValues", "")).strip(),
             ":socialLinks": social_links,
+            ":avatarUrl": str(body.get("avatarUrl", "")).strip(),
             ":updatedAt": now,
         },
     )

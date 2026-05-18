@@ -25,6 +25,7 @@ REQUIRED_FIELDS = ["name", "email", "subject", "message"]
 MAX_LENGTHS = {
     "name": 120,
     "email": 254,
+    "phone": 30,
     "company": 160,
     "projectType": 120,
     "budget": 80,
@@ -137,6 +138,7 @@ def submit_contact(event):
         "messageId": message_id,
         "name": body["name"].strip(),
         "email": body["email"].strip(),
+        "phone": str(body.get("phone", "")).strip(),
         "company": str(body.get("company", "")).strip(),
         "projectType": str(body.get("projectType", "")).strip(),
         "budget": str(body.get("budget", "")).strip(),

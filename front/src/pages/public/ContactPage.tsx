@@ -9,6 +9,7 @@ import type { ContactFormData } from "../../types/contact";
 const schema = yup.object({
   name: yup.string().required("Name is required.").max(120),
   email: yup.string().required("Email is required.").email("Enter a valid email.").max(254),
+  phone: yup.string().defined().default("").max(30),
   company: yup.string().defined().default("").max(160),
   projectType: yup.string().defined().default("").max(120),
   budget: yup.string().defined().default("").max(80),
@@ -22,6 +23,7 @@ type FormValues = yup.InferType<typeof schema>;
 const defaultValues: FormValues = {
   name: "",
   email: "",
+  phone: "",
   company: "",
   projectType: "",
   budget: "",
@@ -96,11 +98,20 @@ const ContactPage = () => {
               render={({ field }) => <Input {...field} style={inputStyle} />} />
           </Form.Item>
 
-          <Form.Item label={<span style={{ color: "#d1d5db" }}>Email</span>}
-            validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
-            <Controller name="email" control={control}
-              render={({ field }) => <Input {...field} style={inputStyle} />} />
-          </Form.Item>
+          <Space style={{ width: "100%" }} size="middle" align="start">
+            <Form.Item label={<span style={{ color: "#d1d5db" }}>Email</span>}
+              validateStatus={errors.email ? "error" : ""} help={errors.email?.message}
+              style={{ flex: 1 }}>
+              <Controller name="email" control={control}
+                render={({ field }) => <Input {...field} style={inputStyle} />} />
+            </Form.Item>
+            <Form.Item label={<span style={{ color: "#d1d5db" }}>Phone <span style={{ color: "#4b5563", fontWeight: 400 }}>(optional)</span></span>}
+              validateStatus={errors.phone ? "error" : ""} help={errors.phone?.message}
+              style={{ flex: 1 }}>
+              <Controller name="phone" control={control}
+                render={({ field }) => <Input {...field} placeholder="+1 (555) 000-0000" style={inputStyle} />} />
+            </Form.Item>
+          </Space>
 
           <Space style={{ width: "100%" }} size="middle" align="start">
             <Form.Item label={<span style={{ color: "#d1d5db" }}>Company</span>}

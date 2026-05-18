@@ -17,6 +17,7 @@ export interface ProfileData {
   aboutFocus?: string;
   aboutBuilds?: string;
   aboutValues?: string;
+  avatarUrl?: string;
   cvFileUrl?: string;
   socialLinks: SocialLinks;
   updatedAt?: string;

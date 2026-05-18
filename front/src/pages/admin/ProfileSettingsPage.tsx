@@ -1,10 +1,12 @@
-import { useEffect } from "react";
-import { App, Button, Card, Form, Input, Space, Typography } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { App, Avatar, Button, Card, Form, Input, Space, Typography } from "antd";
+import { UserOutlined, UploadOutlined } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AdminLayout from "../../components/AdminLayout";
 import { getProfile, updateProfile } from "../../services/profileService";
+import { uploadMediaFile } from "../../services/mediaService";
 import { useAuthContext } from "../../context/AuthContext";
 import type { ProfileData } from "../../types/profile";
 
@@ -28,32 +30,65 @@ type FormValues = yup.InferType<typeof schema>;
 const ProfileSettingsPage = () => {
   const { idToken } = useAuthContext();
   const { message } = App.useApp();
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     control,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: yupResolver(schema) });
 
   useEffect(() => {
     getProfile()
-      .then((data) => reset({
-        name:     data.name,
-        title:    data.title,
-        summary:  data.summary,
-        location: data.location,
-        aboutIntro:  data.aboutIntro  ?? "",
-        aboutFocus:  data.aboutFocus  ?? "",
-        aboutBuilds: data.aboutBuilds ?? "",
-        aboutValues: data.aboutValues ?? "",
-        github:   data.socialLinks?.github   ?? "",
-        linkedin: data.socialLinks?.linkedin ?? "",
-        twitter:  data.socialLinks?.twitter  ?? "",
-        website:  data.socialLinks?.website  ?? "",
-      }))
+      .then((data) => {
+        setAvatarUrl(data.avatarUrl ?? "");
+        reset({
+          name:     data.name,
+          title:    data.title,
+          summary:  data.summary,
+          location: data.location,
+          aboutIntro:  data.aboutIntro  ?? "",
+          aboutFocus:  data.aboutFocus  ?? "",
+          aboutBuilds: data.aboutBuilds ?? "",
+          aboutValues: data.aboutValues ?? "",
+          github:   data.socialLinks?.github   ?? "",
+          linkedin: data.socialLinks?.linkedin ?? "",
+          twitter:  data.socialLinks?.twitter  ?? "",
+          website:  data.socialLinks?.website  ?? "",
+        });
+      })
       .catch(() => message.error("Failed to load profile."));
   }, [reset, message]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !idToken) return;
+    setAvatarUploading(true);
+    try {
+      const record = await uploadMediaFile(file, idToken, "profile-avatar", "profile-avatar");
+      const newUrl = record.cloudfrontUrl;
+      setAvatarUrl(newUrl);
+      const values = getValues();
+      await updateProfile({
+        name: values.name, title: values.title, summary: values.summary, location: values.location,
+        aboutIntro: values.aboutIntro || undefined, aboutFocus: values.aboutFocus || undefined,
+        aboutBuilds: values.aboutBuilds || undefined, aboutValues: values.aboutValues || undefined,
+        socialLinks: { github: values.github || undefined, linkedin: values.linkedin || undefined,
+          twitter: values.twitter || undefined, website: values.website || undefined },
+        avatarUrl: newUrl,
+      }, idToken);
+      message.success("Profile photo updated.");
+    } catch {
+      message.error("Failed to upload photo.");
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const onSubmit = async (values: FormValues) => {
     if (!idToken) return;
@@ -67,6 +102,7 @@ const ProfileSettingsPage = () => {
         aboutFocus:  values.aboutFocus  || undefined,
         aboutBuilds: values.aboutBuilds || undefined,
         aboutValues: values.aboutValues || undefined,
+        avatarUrl: avatarUrl || undefined,
         socialLinks: {
           github:   values.github   || undefined,
           linkedin: values.linkedin || undefined,
@@ -93,6 +129,68 @@ const ProfileSettingsPage = () => {
             Edit the public About page profile information.
           </Typography.Text>
         </div>
+
+        {/* Avatar upload */}
+        <Card>
+          <Space align="center" size={24}>
+            <Avatar
+              size={96}
+              src={avatarUrl || undefined}
+              icon={!avatarUrl ? <UserOutlined /> : undefined}
+              style={{ flexShrink: 0 }}
+            />
+            <div>
+              <Typography.Text strong style={{ display: "block", marginBottom: 6 }}>
+                Profile Photo
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 12 }}>
+                JPG or PNG, max 5 MB. Displayed on the public homepage.
+              </Typography.Text>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: "none" }}
+                onChange={handleAvatarChange}
+              />
+              <Space>
+                <Button
+                  icon={<UploadOutlined />}
+                  loading={avatarUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {avatarUrl ? "Change Photo" : "Upload Photo"}
+                </Button>
+                {avatarUrl && (
+                  <Button
+                    danger
+                    disabled={avatarUploading}
+                    onClick={async () => {
+                      if (!idToken) return;
+                      const values = getValues();
+                      try {
+                        await updateProfile({
+                          name: values.name, title: values.title, summary: values.summary, location: values.location,
+                          aboutIntro: values.aboutIntro || undefined, aboutFocus: values.aboutFocus || undefined,
+                          aboutBuilds: values.aboutBuilds || undefined, aboutValues: values.aboutValues || undefined,
+                          socialLinks: { github: values.github || undefined, linkedin: values.linkedin || undefined,
+                            twitter: values.twitter || undefined, website: values.website || undefined },
+                          avatarUrl: "",
+                        }, idToken);
+                        setAvatarUrl("");
+                        message.success("Photo removed.");
+                      } catch {
+                        message.error("Failed to remove photo.");
+                      }
+                    }}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </Space>
+            </div>
+          </Space>
+        </Card>
 
         <Card>
           <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
