@@ -295,6 +295,8 @@ GSI key update pattern:
 
 Project mutations log structured events for create, delete, and patch operations.
 
+Project create and update requests support media reference fields: `thumbnailUrl`, `thumbnailS3Key`, `screenshotUrls`, and `screenshotKeys`. The media upload flow creates S3 objects and `MEDIA` records separately; project mutations only persist the selected CloudFront URLs and S3 keys on the `PROJECT` item.
+
 Case studies are stored separately with `pk = PROJECT#<id>` and `sk = CASE_STUDY`. Upsert uses `PutItem` as a full replace and requires `problem`, `solution`, and `architecture`; `challenges` and `results` are optional. The public get route returns `{}` when a project has no case study because case studies are optional.
 
 ---

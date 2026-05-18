@@ -29,6 +29,9 @@ export type ProjectInput = {
   featured: boolean;
   featuredOrder?: number;
   thumbnailUrl?: string;
+  thumbnailS3Key?: string;
+  screenshotKeys?: string[];
+  screenshotUrls?: string[];
   githubUrl?: string;
   liveUrl?: string;
 };

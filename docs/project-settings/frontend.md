@@ -302,6 +302,17 @@ The public homepage uses `front/src/hooks/useHomePage.ts` to load the landing-pa
 
 The hook settles each request independently and exposes per-section loading and error state. A failed section renders a local fallback while the rest of the page continues to render.
 
+### Admin dashboard
+
+The admin dashboard uses `front/src/hooks/useDashboard.ts` to load project stats and unread message counts in parallel:
+
+| Data | Service |
+|---|---|
+| Project stats | `listProjectsAdmin(idToken)` |
+| Unread messages | `listMessages(idToken, "unread")` |
+
+The page renders stat cards for total projects, published projects, drafts, featured projects, and unread messages. It also provides quick-link cards for projects, experience, skills, certifications, media, messages, and settings.
+
 ### Projects pages
 
 The projects feature uses:
@@ -318,7 +329,9 @@ The projects feature uses:
 
 Admin project routes are wrapped in `ProtectedRoute`; backend authorization still enforces the `admin` group for all admin calls.
 
-`ProjectDetailPage` fetches the case study after loading the project by slug and renders the case study section only when data exists.
+`ProjectFormPage` integrates `MediaUpload` for project thumbnails and screenshots. Thumbnail uploads save `thumbnailUrl` and `thumbnailS3Key` into the project form. Screenshot uploads append to `screenshotUrls` and `screenshotKeys`; removing a screenshot from the form only removes that reference from the project record.
+
+`ProjectDetailPage` fetches the case study after loading the project by slug and renders the case study section only when data exists. It also renders project screenshots from `screenshotUrls` when present.
 
 ### Experience pages
 

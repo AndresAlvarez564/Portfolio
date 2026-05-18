@@ -222,6 +222,43 @@ def test_update_project_success():
 
 
 @mock_aws
+def test_update_project_with_thumbnail_and_screenshots():
+    table = _make_table()
+    _seed(table, _project("one", "Old", "old"))
+
+    response = update_project(_admin_event({
+        "title": "New",
+        "description": "Updated.",
+        "techStack": ["Python"],
+        "category": "api",
+        "status": "published",
+        "thumbnailUrl": "https://cdn.example.com/thumb.png",
+        "thumbnailS3Key": "media/project-thumbnail/thumb.png",
+        "screenshotUrls": [
+            "https://cdn.example.com/screenshot-one.png",
+            "https://cdn.example.com/screenshot-two.png",
+        ],
+        "screenshotKeys": [
+            "media/project-screenshot/screenshot-one.png",
+            "media/project-screenshot/screenshot-two.png",
+        ],
+    }), "one")
+    data = _body(response)["data"]
+
+    assert response["statusCode"] == 200
+    assert data["thumbnailUrl"] == "https://cdn.example.com/thumb.png"
+    assert data["thumbnailS3Key"] == "media/project-thumbnail/thumb.png"
+    assert data["screenshotUrls"] == [
+        "https://cdn.example.com/screenshot-one.png",
+        "https://cdn.example.com/screenshot-two.png",
+    ]
+    assert data["screenshotKeys"] == [
+        "media/project-screenshot/screenshot-one.png",
+        "media/project-screenshot/screenshot-two.png",
+    ]
+
+
+@mock_aws
 def test_delete_project_success_returns_204():
     table = _make_table()
     _seed(table, _project("one", "Delete", "delete"))

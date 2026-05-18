@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { App, Button, Card, Checkbox, Form, Input, InputNumber, Select, Space, Tabs, Typography } from "antd";
-import { Controller, useForm } from "react-hook-form";
+import { App, Button, Card, Checkbox, Form, Image, Input, InputNumber, Select, Space, Tabs, Typography } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AdminLayout from "../../components/AdminLayout";
@@ -14,6 +15,7 @@ import {
 import { ROUTES } from "../../constants";
 import type { ProjectInput } from "../../types/project";
 import CaseStudyForm from "../../components/admin/CaseStudyForm";
+import MediaUpload from "../../components/MediaUpload";
 
 const optionalUrl = yup
   .string()
@@ -32,6 +34,9 @@ const schema = yup.object({
   featured: yup.boolean().required().default(false),
   featuredOrder: yup.number().min(0).optional().default(0),
   thumbnailUrl: optionalUrl,
+  thumbnailS3Key: yup.string().default(""),
+  screenshotUrls: yup.array(yup.string().required()).default([]),
+  screenshotKeys: yup.array(yup.string().required()).default([]),
   githubUrl: optionalUrl,
   liveUrl: optionalUrl,
 });
@@ -47,6 +52,9 @@ const defaultValues: FormValues = {
   featured: false,
   featuredOrder: 0,
   thumbnailUrl: "",
+  thumbnailS3Key: "",
+  screenshotUrls: [],
+  screenshotKeys: [],
   githubUrl: "",
   liveUrl: "",
 };
@@ -62,11 +70,15 @@ const ProjectFormPage = () => {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     defaultValues,
     resolver: yupResolver(schema),
   });
+  const thumbnailUrl = useWatch({ control, name: "thumbnailUrl" });
+  const screenshotUrls = useWatch({ control, name: "screenshotUrls" }) ?? [];
+  const screenshotKeys = useWatch({ control, name: "screenshotKeys" }) ?? [];
 
   useEffect(() => {
     if (!idToken || !id) return;
@@ -81,6 +93,9 @@ const ProjectFormPage = () => {
         featured: project.featured,
         featuredOrder: project.featuredOrder ?? 0,
         thumbnailUrl: project.thumbnailUrl ?? "",
+        thumbnailS3Key: project.thumbnailS3Key ?? "",
+        screenshotUrls: project.screenshotUrls ?? [],
+        screenshotKeys: project.screenshotKeys ?? [],
         githubUrl: project.githubUrl ?? "",
         liveUrl: project.liveUrl ?? "",
       }))
@@ -99,6 +114,9 @@ const ProjectFormPage = () => {
       featured: values.featured,
       featuredOrder: values.featuredOrder ?? 0,
       thumbnailUrl: values.thumbnailUrl ?? "",
+      thumbnailS3Key: values.thumbnailS3Key ?? "",
+      screenshotUrls: values.screenshotUrls ?? [],
+      screenshotKeys: values.screenshotKeys ?? [],
       githubUrl: values.githubUrl ?? "",
       liveUrl: values.liveUrl ?? "",
     };
@@ -117,9 +135,14 @@ const ProjectFormPage = () => {
     }
   };
 
+  const removeScreenshot = (index: number) => {
+    setValue("screenshotUrls", screenshotUrls.filter((_, itemIndex) => itemIndex !== index), { shouldDirty: true });
+    setValue("screenshotKeys", screenshotKeys.filter((_, itemIndex) => itemIndex !== index), { shouldDirty: true });
+  };
+
   return (
     <AdminLayout>
-      <Space direction="vertical" size="large" style={{ maxWidth: 760, width: "100%" }}>
+      <Space direction="vertical" size="large" style={{ maxWidth: 960, width: "100%" }}>
         <div>
           <Typography.Title level={2} style={{ marginBottom: 0 }}>
             {isEdit ? "Edit Project" : "Create Project"}
@@ -199,9 +222,66 @@ const ProjectFormPage = () => {
               </Form.Item>
             </Space>
 
-            <Form.Item label="Thumbnail URL" validateStatus={errors.thumbnailUrl ? "error" : ""} help={errors.thumbnailUrl?.message}>
-              <Controller name="thumbnailUrl" control={control} render={({ field }) => <Input {...field} />} />
-            </Form.Item>
+            <Card size="small" title="Thumbnail" style={{ marginBottom: 24 }}>
+              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <Controller name="thumbnailUrl" control={control} render={({ field }) => <Input {...field} placeholder="Thumbnail URL" />} />
+                <MediaUpload
+                  context="project-thumbnail"
+                  mediaType="thumbnail"
+                  relatedId={id}
+                  accept="image/*"
+                  label="Upload Thumbnail"
+                  currentUrl={thumbnailUrl}
+                  onUploadComplete={(media) => {
+                    setValue("thumbnailUrl", media.cloudfrontUrl, { shouldDirty: true });
+                    setValue("thumbnailS3Key", media.s3Key, { shouldDirty: true });
+                  }}
+                />
+                {errors.thumbnailUrl?.message && (
+                  <Typography.Text type="danger">{errors.thumbnailUrl.message}</Typography.Text>
+                )}
+              </Space>
+            </Card>
+
+            <Card size="small" title="Screenshots" style={{ marginBottom: 24 }}>
+              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                {screenshotUrls.length > 0 && (
+                  <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+                    {screenshotUrls.map((url, index) => (
+                      <Card
+                        key={`${url}-${index}`}
+                        size="small"
+                        cover={<Image src={url} alt={`Project screenshot ${index + 1}`} height={140} style={{ objectFit: "cover" }} />}
+                        actions={[
+                          <Button
+                            key="remove"
+                            danger
+                            type="text"
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeScreenshot(index)}
+                          >
+                            Remove
+                          </Button>,
+                        ]}
+                      >
+                        <Typography.Text ellipsis>{url}</Typography.Text>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+                <MediaUpload
+                  context="project-screenshot"
+                  mediaType="screenshot"
+                  relatedId={id}
+                  accept="image/*"
+                  label="Upload Screenshot"
+                  onUploadComplete={(media) => {
+                    setValue("screenshotUrls", [...screenshotUrls, media.cloudfrontUrl], { shouldDirty: true });
+                    setValue("screenshotKeys", [...screenshotKeys, media.s3Key], { shouldDirty: true });
+                  }}
+                />
+              </Space>
+            </Card>
 
             <Form.Item label="GitHub URL" validateStatus={errors.githubUrl ? "error" : ""} help={errors.githubUrl?.message}>
               <Controller name="githubUrl" control={control} render={({ field }) => <Input {...field} />} />

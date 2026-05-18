@@ -27,6 +27,7 @@ MAX_LENGTHS = {
     "githubUrl": 500,
     "liveUrl": 500,
     "thumbnailUrl": 500,
+    "thumbnailS3Key": 500,
 }
 
 
@@ -97,6 +98,9 @@ def _validate_project_body(body, partial=False):
 
     if "screenshotUrls" in body and not isinstance(body["screenshotUrls"], list):
         return "The 'screenshotUrls' field must be a list."
+
+    if "screenshotKeys" in body and not isinstance(body["screenshotKeys"], list):
+        return "The 'screenshotKeys' field must be a list."
 
     if "status" in body and body["status"] not in VALID_STATUSES:
         return "The 'status' field must be 'draft' or 'published'."
