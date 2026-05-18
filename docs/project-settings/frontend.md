@@ -302,6 +302,12 @@ The public homepage uses `front/src/hooks/useHomePage.ts` to load the landing-pa
 
 The hook settles each request independently and exposes per-section loading and error state. A failed section renders a local fallback while the rest of the page continues to render.
 
+### About page
+
+The public about page uses `getProfile()` to render Andres's name, title, summary, location, social links, and CV link when available. The page adds static sections for professional story, AWS/cloud focus, what Andres builds, work values, and CTAs to Projects and Contact.
+
+The page handles loading, profile fetch failure, and empty profile states locally. The CV button is hidden when `cvFileUrl` is empty.
+
 ### Admin dashboard
 
 The admin dashboard uses `front/src/hooks/useDashboard.ts` to load project stats and unread message counts in parallel:
