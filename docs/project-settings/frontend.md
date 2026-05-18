@@ -304,9 +304,11 @@ The hook settles each request independently and exposes per-section loading and 
 
 ### About page
 
-The public about page uses `getProfile()` to render Andres's name, title, summary, location, social links, and CV link when available. The page adds static sections for professional story, AWS/cloud focus, what Andres builds, work values, and CTAs to Projects and Contact.
+The public about page uses `getProfile()` to render Andres's name, title, summary, location, social links, CV link, and editable About content when available. The editable profile fields are `aboutIntro`, `aboutFocus`, `aboutBuilds`, and `aboutValues`.
 
-The page handles loading, profile fetch failure, and empty profile states locally. The CV button is hidden when `cvFileUrl` is empty.
+The page handles loading, profile fetch failure, and empty profile states locally. The CV button is hidden when `cvFileUrl` is empty. `ProfileSettingsPage` exposes the About fields in the admin panel so the About page and Home preview can be updated without code changes.
+
+Home renders an About preview from the first paragraph of `aboutIntro` and up to four values from `aboutValues`, with fallback copy when those fields are empty.
 
 ### Admin dashboard
 

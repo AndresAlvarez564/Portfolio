@@ -13,6 +13,10 @@ const schema = yup.object({
   title:    yup.string().required("Title is required.").max(100),
   summary:  yup.string().required("Summary is required.").max(1000),
   location: yup.string().required("Location is required.").max(100),
+  aboutIntro:  yup.string().max(1500, "About intro must not exceed 1500 characters.").optional().default(""),
+  aboutFocus:  yup.string().max(1500, "Cloud focus must not exceed 1500 characters.").optional().default(""),
+  aboutBuilds: yup.string().max(1500, "What I build must not exceed 1500 characters.").optional().default(""),
+  aboutValues: yup.string().max(1000, "Work values must not exceed 1000 characters.").optional().default(""),
   github:   yup.string().url("Must be a valid URL.").optional().default(""),
   linkedin: yup.string().url("Must be a valid URL.").optional().default(""),
   twitter:  yup.string().url("Must be a valid URL.").optional().default(""),
@@ -39,6 +43,10 @@ const ProfileSettingsPage = () => {
         title:    data.title,
         summary:  data.summary,
         location: data.location,
+        aboutIntro:  data.aboutIntro  ?? "",
+        aboutFocus:  data.aboutFocus  ?? "",
+        aboutBuilds: data.aboutBuilds ?? "",
+        aboutValues: data.aboutValues ?? "",
         github:   data.socialLinks?.github   ?? "",
         linkedin: data.socialLinks?.linkedin ?? "",
         twitter:  data.socialLinks?.twitter  ?? "",
@@ -55,6 +63,10 @@ const ProfileSettingsPage = () => {
         title:    values.title,
         summary:  values.summary,
         location: values.location,
+        aboutIntro:  values.aboutIntro  || undefined,
+        aboutFocus:  values.aboutFocus  || undefined,
+        aboutBuilds: values.aboutBuilds || undefined,
+        aboutValues: values.aboutValues || undefined,
         socialLinks: {
           github:   values.github   || undefined,
           linkedin: values.linkedin || undefined,
@@ -100,6 +112,26 @@ const ProfileSettingsPage = () => {
           <Form.Item label="Location" validateStatus={errors.location ? "error" : ""} help={errors.location?.message}>
             <Controller name="location" control={control} render={({ field }) => <Input {...field} />} />
           </Form.Item>
+
+          <Typography.Title level={4}>About Me Content</Typography.Title>
+
+          <Form.Item label="About Intro / Story" validateStatus={errors.aboutIntro ? "error" : ""} help={errors.aboutIntro?.message}>
+            <Controller name="aboutIntro" control={control} render={({ field }) => <Input.TextArea rows={5} {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Cloud / AWS Focus" validateStatus={errors.aboutFocus ? "error" : ""} help={errors.aboutFocus?.message}>
+            <Controller name="aboutFocus" control={control} render={({ field }) => <Input.TextArea rows={4} {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="What I Build" validateStatus={errors.aboutBuilds ? "error" : ""} help={errors.aboutBuilds?.message}>
+            <Controller name="aboutBuilds" control={control} render={({ field }) => <Input.TextArea rows={4} {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Work Values" validateStatus={errors.aboutValues ? "error" : ""} help={errors.aboutValues?.message}>
+            <Controller name="aboutValues" control={control} render={({ field }) => <Input.TextArea rows={3} {...field} />} />
+          </Form.Item>
+
+          <Typography.Title level={4}>Social Links</Typography.Title>
 
           <Form.Item label="GitHub URL" validateStatus={errors.github ? "error" : ""} help={errors.github?.message}>
             <Controller name="github" control={control} render={({ field }) => <Input {...field} placeholder="https://github.com/username" />} />

@@ -27,6 +27,14 @@ const formatDates = (item: Experience) => {
   return `${item.startDate} - ${end}`;
 };
 
+const aboutPreview = (value?: string) => {
+  const text = value?.trim();
+  if (!text) {
+    return "I build practical cloud systems while growing toward Solutions Architect work, with a focus on AWS, serverless applications, and clear architecture decisions.";
+  }
+  return text.split(/\n+/)[0];
+};
+
 const SectionHeader = ({ title, to }: { title: string; to?: string }) => (
   <Space align="center" style={{ justifyContent: "space-between", width: "100%" }}>
     <Title level={2} style={{ margin: 0 }}>{title}</Title>
@@ -128,6 +136,29 @@ const HomePage = () => {
                   </Card>
                 ))}
               </div>
+            </section>
+          ) : null}
+
+          {loading.profile ? (
+            <Skeleton active />
+          ) : profile ? (
+            <section>
+              <SectionHeader title="About Me" to={ROUTES.ABOUT} />
+              <Card style={{ marginTop: 20 }}>
+                <Space direction="vertical" size="middle">
+                  <Paragraph style={{ fontSize: 16, margin: 0 }}>
+                    {aboutPreview(profile.aboutIntro)}
+                  </Paragraph>
+                  <Space size={[8, 8]} wrap>
+                    {(profile.aboutValues?.split(/\n+/).map((item) => item.trim()).filter(Boolean) ?? [
+                      "AWS-focused",
+                      "Practical architecture",
+                      "Reliable delivery",
+                    ]).slice(0, 4).map((value) => <Tag color="blue" key={value}>{value}</Tag>)}
+                  </Space>
+                  <Button><Link to={ROUTES.ABOUT}>Read More</Link></Button>
+                </Space>
+              </Card>
             </section>
           ) : null}
 

@@ -19,6 +19,8 @@ const profile = {
   title: "Solutions Architect",
   summary: "I build practical cloud systems.",
   location: "La Paz, Bolivia",
+  aboutIntro: "I connect cloud architecture with practical delivery.",
+  aboutValues: "Clear documentation\nReliable delivery",
   cvFileUrl: "https://cdn.example.com/cv.pdf",
   socialLinks: {
     github: "https://github.com/andres",
@@ -97,6 +99,15 @@ describe("HomePage", () => {
 
     expect(await screen.findByText("Featured CRM")).toBeInTheDocument();
     expect(screen.getByText("React")).toBeInTheDocument();
+  });
+
+  it("renders about preview from profile data", async () => {
+    renderHome();
+
+    expect(await screen.findByText("About Me")).toBeInTheDocument();
+    expect(screen.getByText("I connect cloud architecture with practical delivery.")).toBeInTheDocument();
+    expect(screen.getByText("Clear documentation")).toBeInTheDocument();
+    expect(screen.getByText("Read More")).toBeInTheDocument();
   });
 
   it("hides cv button when no cv url", async () => {

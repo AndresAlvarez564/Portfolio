@@ -39,6 +39,10 @@ def _seed_profile(table):
         "title": "Solutions Architect",
         "summary": "Cloud professional.",
         "location": "Bolivia",
+        "aboutIntro": "I connect cloud architecture with practical delivery.",
+        "aboutFocus": "AWS serverless, APIs, DynamoDB, and operations.",
+        "aboutBuilds": "Portfolio CRM, admin tools, and event-driven workflows.",
+        "aboutValues": "Clear documentation, reliability, and security-aware defaults.",
         "email": "andres@example.com",
         "cvS3Key": "media/cv/andres.pdf",
         "cvFileUrl": "https://cdn.example.com/cv.pdf",
@@ -118,6 +122,10 @@ def test_update_profile_success():
         "title": "Senior Architect",
         "summary": "Updated summary.",
         "location": "La Paz",
+        "aboutIntro": "Updated intro.",
+        "aboutFocus": "Updated focus.",
+        "aboutBuilds": "Updated builds.",
+        "aboutValues": "Updated values.",
         "socialLinks": {"github": "https://github.com/andres2"},
     })
 
@@ -126,6 +134,10 @@ def test_update_profile_success():
     data = json.loads(response["body"])["data"]
     assert data["name"] == "Andres Updated"
     assert data["title"] == "Senior Architect"
+    assert data["aboutIntro"] == "Updated intro."
+    assert data["aboutFocus"] == "Updated focus."
+    assert data["aboutBuilds"] == "Updated builds."
+    assert data["aboutValues"] == "Updated values."
     assert "email" not in data
 
 

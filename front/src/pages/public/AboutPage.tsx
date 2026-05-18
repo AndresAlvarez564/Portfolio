@@ -38,6 +38,16 @@ const workValues = [
   "Security-aware defaults",
 ];
 
+const defaultAboutIntro = [
+  "I focus on cloud architecture because it connects design, backend engineering, security, operations, and business outcomes.",
+  "This portfolio is built as a working system, not only a static site, so each feature gives me a practical reason to make architecture decisions and document the tradeoffs.",
+].join(" ");
+
+const defaultAboutFocus = "My current direction is AWS-focused: serverless applications, clean API boundaries, DynamoDB access patterns, event-driven processing, media delivery, and reliable deployment practices.";
+
+const splitEditableText = (value: string | undefined, fallback: string) =>
+  (value?.trim() || fallback).split(/\n+/).map((item) => item.trim()).filter(Boolean);
+
 const AboutPage = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +96,11 @@ const AboutPage = () => {
     );
   }
 
+  const introParagraphs = splitEditableText(profile.aboutIntro, defaultAboutIntro);
+  const focusParagraphs = splitEditableText(profile.aboutFocus, defaultAboutFocus);
+  const buildItems = splitEditableText(profile.aboutBuilds, buildAreas.join("\n"));
+  const valueItems = splitEditableText(profile.aboutValues, workValues.join("\n"));
+
   return (
     <main style={{ margin: "0 auto", maxWidth: 1120, padding: 24 }}>
       <Space direction="vertical" size={40} style={{ width: "100%" }}>
@@ -132,7 +147,7 @@ const AboutPage = () => {
               <CloudServerOutlined style={{ color: "#1677ff", fontSize: 36 }} />
               <Title level={3} style={{ margin: 0 }}>Cloud direction</Title>
               <Paragraph style={{ margin: 0 }}>
-                I am building toward Solutions Architect work by practicing the full path from requirements to deployed AWS systems.
+                {focusParagraphs[0]}
               </Paragraph>
             </Space>
           </Card>
@@ -140,13 +155,16 @@ const AboutPage = () => {
 
         <section>
           <Title level={2}>My Path</Title>
-          <Paragraph style={{ fontSize: 16 }}>
-            I focus on cloud architecture because it connects design, backend engineering, security, operations, and business outcomes.
-            This portfolio is built as a working system, not only a static site, so each feature gives me a practical reason to make architecture decisions and document the tradeoffs.
-          </Paragraph>
-          <Paragraph style={{ fontSize: 16 }}>
-            My current direction is AWS-focused: serverless applications, clean API boundaries, DynamoDB access patterns, event-driven processing, media delivery, and reliable deployment practices.
-          </Paragraph>
+          {introParagraphs.map((paragraph) => (
+            <Paragraph key={paragraph} style={{ fontSize: 16 }}>
+              {paragraph}
+            </Paragraph>
+          ))}
+          {focusParagraphs.slice(1).map((paragraph) => (
+            <Paragraph key={paragraph} style={{ fontSize: 16 }}>
+              {paragraph}
+            </Paragraph>
+          ))}
         </section>
 
         <section>
@@ -159,7 +177,7 @@ const AboutPage = () => {
         <section>
           <Title level={2}>What I Build</Title>
           <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-            {buildAreas.map((area) => (
+            {buildItems.map((area) => (
               <Card key={area}>
                 <Paragraph style={{ margin: 0 }}>{area}</Paragraph>
               </Card>
@@ -170,7 +188,7 @@ const AboutPage = () => {
         <section>
           <Title level={2}>How I Work</Title>
           <Space size={[8, 8]} wrap>
-            {workValues.map((value) => <Tag color="blue" key={value}>{value}</Tag>)}
+            {valueItems.map((value) => <Tag color="blue" key={value}>{value}</Tag>)}
           </Space>
         </section>
 

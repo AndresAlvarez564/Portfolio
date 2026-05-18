@@ -27,6 +27,10 @@ _MAX_LENGTHS = {
     "title": 100,
     "summary": 1000,
     "location": 100,
+    "aboutIntro": 1500,
+    "aboutFocus": 1500,
+    "aboutBuilds": 1500,
+    "aboutValues": 1000,
 }
 
 
@@ -95,7 +99,9 @@ def update_profile(event):
         Key={"pk": "PROFILE", "sk": "SETTINGS"},
         UpdateExpression=(
             "SET #name = :name, title = :title, summary = :summary, "
-            "#location = :location, socialLinks = :socialLinks, updatedAt = :updatedAt"
+            "#location = :location, aboutIntro = :aboutIntro, aboutFocus = :aboutFocus, "
+            "aboutBuilds = :aboutBuilds, aboutValues = :aboutValues, "
+            "socialLinks = :socialLinks, updatedAt = :updatedAt"
         ),
         ExpressionAttributeNames={"#name": "name", "#location": "location"},
         ExpressionAttributeValues={
@@ -103,6 +109,10 @@ def update_profile(event):
             ":title": body["title"].strip(),
             ":summary": body["summary"].strip(),
             ":location": body["location"].strip(),
+            ":aboutIntro": str(body.get("aboutIntro", "")).strip(),
+            ":aboutFocus": str(body.get("aboutFocus", "")).strip(),
+            ":aboutBuilds": str(body.get("aboutBuilds", "")).strip(),
+            ":aboutValues": str(body.get("aboutValues", "")).strip(),
             ":socialLinks": social_links,
             ":updatedAt": now,
         },
@@ -113,7 +123,7 @@ def update_profile(event):
     item = response.get("Item", {})
     sanitized = {k: v for k, v in item.items() if k not in _PRIVATE_FIELDS}
 
-    fields_updated = _REQUIRED_FIELDS + ["socialLinks"]
+    fields_updated = _REQUIRED_FIELDS + ["aboutIntro", "aboutFocus", "aboutBuilds", "aboutValues", "socialLinks"]
     logger.info(json.dumps({"action": "update_profile", "fields_updated": fields_updated}))
 
     return success(sanitized)

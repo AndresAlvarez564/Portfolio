@@ -11,6 +11,10 @@ const profile = {
   title: "Junior Solutions Architect",
   summary: "I build practical cloud systems with AWS.",
   location: "La Paz, Bolivia",
+  aboutIntro: "Editable story from admin.",
+  aboutFocus: "Editable AWS focus from admin.",
+  aboutBuilds: "Editable project systems.\nEditable admin tools.",
+  aboutValues: "Editable clarity\nEditable reliability",
   cvFileUrl: "https://cdn.example.com/cv.pdf",
   socialLinks: {
     github: "https://github.com/andres",
@@ -45,6 +49,10 @@ describe("AboutPage", () => {
     expect(screen.getByText("Cloud And AWS Focus")).toBeInTheDocument();
     expect(screen.getByText("AWS serverless")).toBeInTheDocument();
     expect(screen.getByText("What I Build")).toBeInTheDocument();
+    expect(screen.getByText("Editable story from admin.")).toBeInTheDocument();
+    expect(screen.getAllByText("Editable AWS focus from admin.").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Editable project systems.")).toBeInTheDocument();
+    expect(screen.getByText("Editable clarity")).toBeInTheDocument();
   });
 
   it("hides cv button when no cv url", async () => {

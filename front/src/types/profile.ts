@@ -13,6 +13,10 @@ export interface ProfileData {
   title: string;
   summary: string;
   location: string;
+  aboutIntro?: string;
+  aboutFocus?: string;
+  aboutBuilds?: string;
+  aboutValues?: string;
   cvFileUrl?: string;
   socialLinks: SocialLinks;
   updatedAt?: string;

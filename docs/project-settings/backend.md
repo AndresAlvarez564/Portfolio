@@ -265,6 +265,21 @@ Business logic will be implemented in Phase 2 feature tickets. Key rules to enfo
 
 ---
 
+## Profile Module
+
+`lambdas/profile/routes/profile.py` implements public profile reads and admin profile updates against the `PROFILE / SETTINGS` item.
+
+Routes:
+
+| Method | Path | Access | Behavior |
+|---|---|---|---|
+| `GET` | `/profile` | Public | Returns sanitized profile settings and excludes private fields |
+| `PUT` | `/profile` | Admin | Updates editable profile and About fields |
+
+Public profile responses exclude `email` and `cvS3Key`. Editable About fields are stored on the same profile item: `aboutIntro`, `aboutFocus`, `aboutBuilds`, and `aboutValues`. These fields drive the public About page and the About preview on Home.
+
+---
+
 ## Projects Module
 
 `lambdas/projects/routes/projects.py` implements project CRUD against DynamoDB `PROJECT` items.
