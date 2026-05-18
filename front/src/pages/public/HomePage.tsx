@@ -176,16 +176,16 @@ const HomePage = () => {
           padding: "64px 24px",
         }}
       >
-        <div style={{ margin: "0 auto", maxWidth: 1120, width: "100%", display: "flex", alignItems: "center", gap: 48, justifyContent: "space-between" }}>
+        <div style={{ margin: "0 auto", maxWidth: 1120 }} className="hero-inner">
           {loading.profile ? (
             <Skeleton active paragraph={{ rows: 5 }} style={{ maxWidth: 680 }} />
           ) : profile ? (
             <>
-            <Space direction="vertical" size={28} style={{ flex: 1, maxWidth: 720 }}>
+            <Space direction="vertical" size={28} style={{ flex: 1, minWidth: 0 }}>
               <div className="fade-in">
                 <h1
                   className="gradient-text"
-                  style={{ fontSize: "clamp(40px, 6vw, 64px)", fontWeight: 800, lineHeight: 1.05, margin: "0 0 10px" }}
+                  style={{ fontSize: "clamp(28px, 6vw, 64px)", fontWeight: 800, lineHeight: 1.1, margin: "0 0 10px" }}
                 >
                   {profile.name}
                 </h1>
@@ -226,18 +226,7 @@ const HomePage = () => {
             </Space>
             {profile.avatarUrl && (
               <div className="fade-in" style={{ flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.name}
-                  style={{
-                    borderRadius: "50%",
-                    border: "3px solid rgba(34,211,238,0.35)",
-                    boxShadow: "0 0 48px rgba(34,211,238,0.12), 0 0 0 1px rgba(34,211,238,0.1)",
-                    height: 220,
-                    objectFit: "cover",
-                    width: 220,
-                  }}
-                />
+                <img src={profile.avatarUrl} alt={profile.name} className="hero-avatar" />
               </div>
             )}
             </>
@@ -260,7 +249,7 @@ const HomePage = () => {
               <Space direction="vertical" size={40} style={{ width: "100%" }}>
 
                 {/* Bio + Cloud card */}
-                <div className="fade-in" style={{ display: "grid", gap: 24, gridTemplateColumns: "minmax(0, 1.5fr) minmax(260px, 0.5fr)" }}>
+                <div className="fade-in about-grid">
                   <Space direction="vertical" size="large">
                     <div>
                       <Text style={{ color: "#22d3ee", fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>

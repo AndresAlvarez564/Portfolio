@@ -116,8 +116,7 @@ const ContactPage = () => {
 
         {/* Two-column layout */}
         <div
-          className="fade-in-1"
-          style={{ display: "grid", gap: 32, gridTemplateColumns: "minmax(260px, 360px) 1fr", alignItems: "start" }}
+          className="fade-in-1 contact-grid"
         >
           {/* Left — contact info card */}
           <Card className="glass-card" styles={{ body: { padding: 28 } }}>

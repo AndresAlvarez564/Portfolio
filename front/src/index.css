@@ -143,6 +143,43 @@ body {
   background: rgba(34, 211, 238, 0.08);
 }
 
+/* ── Hero responsive ──────────────────────────────────── */
+
+.hero-inner {
+  align-items: center;
+  display: flex;
+  gap: 48px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.hero-avatar {
+  border-radius: 50%;
+  border: 3px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 48px rgba(34, 211, 238, 0.12), 0 0 0 1px rgba(34, 211, 238, 0.1);
+  flex-shrink: 0;
+  height: 220px;
+  object-fit: cover;
+  width: 220px;
+}
+
+/* ── About grid ───────────────────────────────────────── */
+
+.about-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.5fr);
+}
+
+/* ── Contact two-col ──────────────────────────────────── */
+
+.contact-grid {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  align-items: start;
+}
+
 /* ── Mobile nav ───────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -151,6 +188,26 @@ body {
   }
   .nav-hamburger {
     display: flex !important;
+  }
+
+  /* Hero */
+  .hero-inner {
+    flex-direction: column;
+    gap: 28px;
+  }
+  .hero-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  /* About */
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Contact */
+  .contact-grid {
+    grid-template-columns: 1fr;
   }
 }
 
