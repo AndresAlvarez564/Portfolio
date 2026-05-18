@@ -108,7 +108,7 @@ const ProjectsListPage = () => {
               title: "Status",
               dataIndex: "status",
               render: (status: Project["status"]) => (
-                <Tag color={status === "published" ? "green" : "default"}>
+                <Tag color={status === "published" ? "green" : status === "in-progress" ? "warning" : "default"}>
                   {status}
                 </Tag>
               ),

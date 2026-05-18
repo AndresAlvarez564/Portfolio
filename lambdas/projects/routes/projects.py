@@ -18,7 +18,7 @@ logger.setLevel(os.environ.get("LOG_LEVEL", "DEBUG"))
 dynamodb = boto3.resource("dynamodb")
 TABLE_NAME = os.environ.get("TABLE_NAME", "portfolio-dev-main")
 
-VALID_STATUSES = {"draft", "published"}
+VALID_STATUSES = {"draft", "published", "in-progress"}
 REQUIRED_FIELDS = ["title", "description"]
 MAX_LENGTHS = {
     "title": 160,
@@ -103,7 +103,7 @@ def _validate_project_body(body, partial=False):
         return "The 'screenshotKeys' field must be a list."
 
     if "status" in body and body["status"] not in VALID_STATUSES:
-        return "The 'status' field must be 'draft' or 'published'."
+        return "The 'status' field must be 'draft', 'published', or 'in-progress'."
 
     if "featured" in body and not isinstance(body["featured"], bool):
         return "The 'featured' field must be a boolean."
@@ -154,14 +154,19 @@ def _featured_count(table):
 
 
 def list_projects(event):
-    """GET /projects - public. Returns published projects only."""
+    """GET /projects - public. Returns published and in-progress projects."""
     table = _table()
-    response = table.query(
+    published = table.query(
         IndexName="gsi1",
         KeyConditionExpression=Key("gsi1pk").eq("PROJECT") & Key("gsi1sk").begins_with("STATUS#published#"),
         ScanIndexForward=False,
-    )
-    return success([_public_project(item) for item in response.get("Items", [])])
+    ).get("Items", [])
+    in_progress = table.query(
+        IndexName="gsi1",
+        KeyConditionExpression=Key("gsi1pk").eq("PROJECT") & Key("gsi1sk").begins_with("STATUS#in-progress#"),
+        ScanIndexForward=False,
+    ).get("Items", [])
+    return success([_public_project(item) for item in in_progress + published])
 
 
 def list_projects_admin(event):
@@ -186,7 +191,7 @@ def get_project_by_slug(event, slug):
         Limit=1,
     )
     items = response.get("Items", [])
-    if not items or items[0].get("status") != "published":
+    if not items or items[0].get("status") not in {"published", "in-progress"}:
         return error("NOT_FOUND", "Project not found.", 404)
 
     return success(_public_project(items[0]))

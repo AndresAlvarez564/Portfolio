@@ -1,4 +1,4 @@
-export type ProjectStatus = "draft" | "published";
+export type ProjectStatus = "draft" | "published" | "in-progress";
 
 export interface Project {
   projectId: string;

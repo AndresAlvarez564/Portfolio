@@ -30,7 +30,7 @@ const schema = yup.object({
   description: yup.string().required("Description is required.").max(1200),
   techStack: yup.array(yup.string().required()).default([]),
   category: yup.string().default(""),
-  status: yup.mixed<"draft" | "published">().oneOf(["draft", "published"]).required(),
+  status: yup.mixed<"draft" | "published" | "in-progress">().oneOf(["draft", "published", "in-progress"]).required(),
   featured: yup.boolean().required().default(false),
   featuredOrder: yup.number().min(0).optional().default(0),
   thumbnailUrl: optionalUrl,
@@ -191,6 +191,7 @@ const ProjectFormPage = () => {
                     {...field}
                     options={[
                       { value: "draft", label: "Draft" },
+                      { value: "in-progress", label: "In Progress" },
                       { value: "published", label: "Published" },
                     ]}
                   />
