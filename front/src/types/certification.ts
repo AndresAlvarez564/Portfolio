@@ -7,6 +7,7 @@ export interface Certification {
   verificationUrl?: string;
   badgeUrl?: string;
   badgeS3Key?: string;
+  inProgress?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,4 +20,5 @@ export type CertificationInput = {
   verificationUrl?: string;
   badgeUrl?: string;
   badgeS3Key?: string;
+  inProgress?: boolean;
 };

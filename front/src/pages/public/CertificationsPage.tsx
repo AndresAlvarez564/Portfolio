@@ -13,9 +13,10 @@ const parseDate = (s?: string) => {
   return isNaN(n.getTime()) ? null : n;
 };
 
-type CertStatus = "active" | "expiring" | "expired" | "permanent";
+type CertStatus = "active" | "expiring" | "expired" | "permanent" | "studying";
 
 const getCertStatus = (cert: Certification): CertStatus => {
+  if (cert.inProgress) return "studying";
   if (!cert.expirationDate) return "permanent";
   const exp = parseDate(cert.expirationDate);
   if (!exp) return "permanent";
@@ -28,6 +29,7 @@ const getCertStatus = (cert: Certification): CertStatus => {
 };
 
 const statusConfig: Record<CertStatus, { label: string; bg: string; border: string; color: string }> = {
+  studying:  { label: "Studying",  bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.3)",  color: "#fbbf24" },
   active:    { label: "Active",    bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.3)",  color: "#34d399" },
   expiring:  { label: "Expiring",  bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.3)",  color: "#fbbf24" },
   expired:   { label: "Expired",   bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.3)", color: "#f87171" },
@@ -48,13 +50,16 @@ const CertificationsPage = () => {
   }, []);
 
   const issuers = useMemo(() => {
-    const s = Array.from(new Set(items.map((i) => i.issuer).filter(Boolean))) as string[];
+    const s = Array.from(new Set(items.filter((i) => !i.inProgress).map((i) => i.issuer).filter(Boolean))) as string[];
     return s.sort();
   }, [items]);
 
+  const inProgressItems = useMemo(() => items.filter((i) => i.inProgress), [items]);
+
   const filtered = useMemo(() => {
-    if (activeIssuer === "all") return items;
-    return items.filter((i) => i.issuer === activeIssuer);
+    const earned = items.filter((i) => !i.inProgress);
+    if (activeIssuer === "all") return earned;
+    return earned.filter((i) => i.issuer === activeIssuer);
   }, [items, activeIssuer]);
 
   const filterPillStyle = (active: boolean): React.CSSProperties => ({
@@ -91,15 +96,60 @@ const CertificationsPage = () => {
 
         {error && <Alert type="error" message={error} showIcon />}
 
+        {/* In-progress section */}
+        {!loading && inProgressItems.length > 0 && (
+          <div className="fade-in-1">
+            <Text style={{ color: "#fbbf24", fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              Currently Studying
+            </Text>
+            <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", marginTop: 16 }}>
+              {inProgressItems.map((item) => (
+                <Card key={item.certificationId} className="glass-card" styles={{ body: { padding: 0 } }}
+                  style={{ borderColor: "rgba(251,191,36,0.2)" }}>
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                    <div style={{
+                      alignItems: "center", background: "rgba(251,191,36,0.04)",
+                      borderBottom: "1px solid rgba(251,191,36,0.15)", borderRadius: "12px 12px 0 0",
+                      display: "flex", height: 120, justifyContent: "center", padding: 16,
+                    }}>
+                      {item.badgeUrl
+                        ? <Image src={item.badgeUrl} alt={`${item.name} badge`} height={96} preview={false} style={{ objectFit: "contain" }} />
+                        : <SafetyCertificateOutlined style={{ color: "#fbbf24", fontSize: 56 }} />
+                      }
+                    </div>
+                    <div style={{ flex: 1, padding: "18px 20px 20px" }}>
+                      <Space direction="vertical" size={10} style={{ width: "100%" }}>
+                        <div>
+                          <Title level={4} style={{ color: "#f9fafb", margin: "0 0 4px" }}>{item.name}</Title>
+                          <Text strong style={{ color: "#22d3ee", fontSize: 13 }}>{item.issuer}</Text>
+                        </div>
+                        <Tag style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", borderRadius: 5, fontSize: 11 }}>
+                          Studying
+                        </Tag>
+                        {item.verificationUrl && (
+                          <Button size="small" href={item.verificationUrl} target="_blank" rel="noreferrer"
+                            style={{ borderColor: "rgba(34,211,238,0.35)", color: "#22d3ee", marginTop: 4 }}>
+                            More Info
+                          </Button>
+                        )}
+                      </Space>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Issuer filter */}
         {!loading && issuers.length > 1 && (
           <Space wrap size={[8, 8]} className="fade-in">
             <span style={filterPillStyle(activeIssuer === "all")} onClick={() => setActiveIssuer("all")}>
-              All ({items.length})
+              All ({items.filter((i) => !i.inProgress).length})
             </span>
             {issuers.map((iss) => (
               <span key={iss} style={filterPillStyle(activeIssuer === iss)} onClick={() => setActiveIssuer(iss)}>
-                {iss} ({items.filter((i) => i.issuer === iss).length})
+                {iss} ({items.filter((i) => !i.inProgress && i.issuer === iss).length})
               </span>
             ))}
           </Space>

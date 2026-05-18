@@ -19,7 +19,7 @@ dynamodb = boto3.resource("dynamodb")
 TABLE_NAME = os.environ.get("TABLE_NAME", "portfolio-dev-main")
 
 DATE_PATTERN = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
-REQUIRED_FIELDS = ["name", "issuer", "issueDate"]
+REQUIRED_FIELDS = ["name", "issuer"]
 MAX_LENGTHS = {
     "name": 180,
     "issuer": 160,
@@ -76,7 +76,15 @@ def _validate_body(body):
         if not str(body.get(field, "")).strip():
             return f"The '{field}' field is required."
 
-    if not DATE_PATTERN.match(str(body.get("issueDate", "")).strip()):
+    in_progress = bool(body.get("inProgress", False))
+    issue_date = str(body.get("issueDate", "")).strip()
+
+    if not in_progress:
+        if not issue_date:
+            return "The 'issueDate' field is required."
+        if not DATE_PATTERN.match(issue_date):
+            return "The 'issueDate' field must use YYYY-MM format."
+    elif issue_date and not DATE_PATTERN.match(issue_date):
         return "The 'issueDate' field must use YYYY-MM format."
 
     expiration_date = str(body.get("expirationDate", "")).strip()
@@ -122,7 +130,9 @@ def create_certification(event):
 
     certification_id = str(uuid.uuid4())
     now = _now()
-    issue_date = body["issueDate"].strip()
+    in_progress = bool(body.get("inProgress", False))
+    issue_date = str(body.get("issueDate", "")).strip()
+    gsi_date = "9999-99" if in_progress else issue_date
     item = {
         "pk": f"CERTIFICATION#{certification_id}",
         "sk": "METADATA",
@@ -135,10 +145,11 @@ def create_certification(event):
         "verificationUrl": str(body.get("verificationUrl", "")).strip(),
         "badgeUrl": str(body.get("badgeUrl", "")).strip(),
         "badgeS3Key": str(body.get("badgeS3Key", "")).strip(),
+        "inProgress": in_progress,
         "createdAt": now,
         "updatedAt": now,
         "gsi1pk": "CERTIFICATION",
-        "gsi1sk": _gsi1sk(issue_date, certification_id),
+        "gsi1sk": _gsi1sk(gsi_date, certification_id),
     }
 
     _table().put_item(Item=item)
@@ -165,7 +176,9 @@ def update_certification(event, certification_id):
     if not item:
         return error("NOT_FOUND", "Certification not found.", 404)
 
-    issue_date = body["issueDate"].strip()
+    in_progress = bool(body.get("inProgress", False))
+    issue_date = str(body.get("issueDate", "")).strip()
+    gsi_date = "9999-99" if in_progress else issue_date
     updated = {
         **item,
         "name": body["name"].strip(),
@@ -175,8 +188,9 @@ def update_certification(event, certification_id):
         "verificationUrl": str(body.get("verificationUrl", "")).strip(),
         "badgeUrl": str(body.get("badgeUrl", "")).strip(),
         "badgeS3Key": str(body.get("badgeS3Key", "")).strip(),
+        "inProgress": in_progress,
         "updatedAt": _now(),
-        "gsi1sk": _gsi1sk(issue_date, certification_id),
+        "gsi1sk": _gsi1sk(gsi_date, certification_id),
     }
 
     table.put_item(Item=updated)

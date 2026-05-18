@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { App, Button, Empty, Modal, Popconfirm, Space, Table, Typography } from "antd";
+import { App, Button, Empty, Modal, Popconfirm, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import AdminLayout from "../../components/AdminLayout";
@@ -85,15 +85,23 @@ const AdminCertificationsPage = () => {
       sorter: (a, b) => a.issuer.localeCompare(b.issuer),
     },
     {
+      title: "Status",
+      key: "status",
+      render: (_, item) => item.inProgress
+        ? <Tag color="warning">In Progress</Tag>
+        : <Tag color="success">Completed</Tag>,
+    },
+    {
       title: "Issue Date",
       dataIndex: "issueDate",
       sorter: (a, b) => a.issueDate.localeCompare(b.issueDate),
       defaultSortOrder: "descend",
+      render: (value?: string) => value || "—",
     },
     {
       title: "Expiration",
       dataIndex: "expirationDate",
-      render: (value?: string) => value || "No expiration",
+      render: (value?: string) => value || "—",
     },
     {
       title: "Actions",
