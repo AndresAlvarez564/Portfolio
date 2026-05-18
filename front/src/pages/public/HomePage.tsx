@@ -174,11 +174,12 @@ const HomePage = () => {
           padding: "64px 24px",
         }}
       >
-        <div style={{ margin: "0 auto", maxWidth: 1120, width: "100%" }}>
+        <div style={{ margin: "0 auto", maxWidth: 1120, width: "100%", display: "flex", alignItems: "center", gap: 48, justifyContent: "space-between" }}>
           {loading.profile ? (
             <Skeleton active paragraph={{ rows: 5 }} style={{ maxWidth: 680 }} />
           ) : profile ? (
-            <Space direction="vertical" size={28} style={{ maxWidth: 780 }}>
+            <>
+            <Space direction="vertical" size={28} style={{ flex: 1, maxWidth: 720 }}>
               <div className="fade-in">
                 <h1
                   className="gradient-text"
@@ -221,6 +222,23 @@ const HomePage = () => {
                 )}
               </Space>
             </Space>
+            {profile.avatarUrl && (
+              <div className="fade-in" style={{ flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.name}
+                  style={{
+                    borderRadius: "50%",
+                    border: "3px solid rgba(34,211,238,0.35)",
+                    boxShadow: "0 0 48px rgba(34,211,238,0.12), 0 0 0 1px rgba(34,211,238,0.1)",
+                    height: 220,
+                    objectFit: "cover",
+                    width: 220,
+                  }}
+                />
+              </div>
+            )}
+            </>
           ) : (
             <Alert type="warning" message={errors.profile ?? "Profile is unavailable."} showIcon />
           )}
