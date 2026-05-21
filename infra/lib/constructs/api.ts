@@ -216,6 +216,25 @@ export class ApiConstruct extends Construct {
     contactByIdResource.addMethod("PATCH", integration("contact"), methodOptions(withAuth));
 
     // -------------------------------------------------------------------------
+    // Gateway Responses — add CORS headers so auth failures (401/403) and
+    // unhandled errors (5XX) are not misreported as CORS errors in the browser.
+    // defaultCorsPreflightOptions only covers OPTIONS; Gateway Responses need
+    // explicit configuration.
+    // -------------------------------------------------------------------------
+    const corsResponseHeaders = {
+      "Access-Control-Allow-Origin": "'*'",
+      "Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+    };
+    this.restApi.addGatewayResponse("Default4XX", {
+      type: apigateway.ResponseType.DEFAULT_4XX,
+      responseHeaders: corsResponseHeaders,
+    });
+    this.restApi.addGatewayResponse("Default5XX", {
+      type: apigateway.ResponseType.DEFAULT_5XX,
+      responseHeaders: corsResponseHeaders,
+    });
+
+    // -------------------------------------------------------------------------
     // CloudFormation Outputs
     // -------------------------------------------------------------------------
     new cdk.CfnOutput(this, "ApiUrl", {
