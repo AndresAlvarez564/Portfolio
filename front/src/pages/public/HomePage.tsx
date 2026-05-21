@@ -26,6 +26,7 @@ const categoryLabels: Record<SkillCategory, string> = {
   frontend: "Frontend",
   devops: "DevOps",
   databases: "Databases",
+  ai: "AI / ML",
 };
 
 const categoryAccents: Record<SkillCategory, { bg: string; border: string; color: string }> = {
@@ -34,6 +35,7 @@ const categoryAccents: Record<SkillCategory, { bg: string; border: string; color
   frontend:  { bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)",  color: "#fbbf24" },
   devops:    { bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.25)",  color: "#34d399" },
   databases: { bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.25)", color: "#f87171" },
+  ai:        { bg: "rgba(232,121,249,0.1)", border: "rgba(232,121,249,0.25)", color: "#e879f9" },
 };
 
 const techTagStyle: React.CSSProperties = {

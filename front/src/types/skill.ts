@@ -1,4 +1,4 @@
-export const SKILL_CATEGORIES = ["cloud", "backend", "frontend", "devops", "databases"] as const;
+export const SKILL_CATEGORIES = ["cloud", "backend", "frontend", "devops", "databases", "ai"] as const;
 export const SKILL_VISIBILITIES = ["visible", "hidden"] as const;
 
 export type SkillCategory = typeof SKILL_CATEGORIES[number];
