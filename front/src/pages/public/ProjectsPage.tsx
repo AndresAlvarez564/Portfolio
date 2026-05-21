@@ -215,7 +215,7 @@ const ProjectsPage = () => {
         )}
 
         {loading ? (
-          <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+          <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
             {[1, 2, 3].map((i) => <Card key={i} className="glass-card" styles={{ body: { padding: 20 } }}><Skeleton active /></Card>)}
           </div>
         ) : filtered.length === 0 ? (
@@ -228,7 +228,7 @@ const ProjectsPage = () => {
                 <Text style={{ color: "#9ca3af", display: "block", fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 16, textTransform: "uppercase" }}>
                   Featured
                 </Text>
-                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
                   {featured.map((p) => <ProjectCard key={p.projectId} project={p} />)}
                 </div>
               </section>
@@ -239,7 +239,7 @@ const ProjectsPage = () => {
                 <Text style={{ color: "#fbbf24", display: "block", fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 16, textTransform: "uppercase" }}>
                   In Progress
                 </Text>
-                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
                   {inProgress.map((p) => <ProjectCard key={p.projectId} project={p} />)}
                 </div>
               </section>
@@ -252,7 +252,7 @@ const ProjectsPage = () => {
                     Other Projects
                   </Text>
                 )}
-                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
                   {rest.map((p) => <ProjectCard key={p.projectId} project={p} />)}
                 </div>
               </section>
